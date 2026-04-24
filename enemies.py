@@ -3,12 +3,31 @@ import math
 import random
 
 from constants import (
-    ROOM_X, ROOM_Y, ROOM_COLS, ROOM_ROWS, TILE,
+    ROOM_X, ROOM_Y, ROOM_COLS, ROOM_ROWS, TILE, INNER_RECT,
     ENEMY_COL, HIT_COL, HP_BG, HP_FG,
     RANGED_E_COL, RANGED_E_ORB,
     BOSS_COL1, BOSS_COL2,
 )
 from projectiles import Projectile
+
+
+def _pt_seg_dist(px, py, ax, ay, bx, by):
+    dx, dy = bx - ax, by - ay
+    lsq = dx * dx + dy * dy
+    if lsq == 0:
+        return math.hypot(px - ax, py - ay)
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / lsq))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def _ray_room_end(cx, cy, dx, dy):
+    ts = []
+    if dx > 0:   ts.append((INNER_RECT.right  - cx) / dx)
+    elif dx < 0: ts.append((INNER_RECT.left   - cx) / dx)
+    if dy > 0:   ts.append((INNER_RECT.bottom - cy) / dy)
+    elif dy < 0: ts.append((INNER_RECT.top    - cy) / dy)
+    t = min(v for v in ts if v > 0)
+    return cx + dx * t, cy + dy * t
 
 
 class Enemy:
@@ -379,11 +398,220 @@ class Salomon:
                 surf.blit(s, (int(self.cx) - size // 2, int(self.cy) - size // 2))
 
 
+class Bambie:
+    """Fast witch miniboss — triple witch bolts and a telegraphed beam attack."""
+
+    W, H          = 22, 22
+    MAX_HP        = 20
+    SPEED         = 1.7
+    IFRAMES       = 25
+    AGGRO         = 700
+    PREFER_DIST   = 160
+    name          = "BAMBIE"
+    hp_bar_col    = ((80, 35, 120), (150, 65, 210))
+
+    ARROW_CD_N    = 95
+    ARROW_CD_P2   = 55
+    BEAM_CD_N     = 270
+    BEAM_CD_P2    = 160
+    BEAM_TEL      = 90   # telegraph frames before beam fires
+    BEAM_ACTIVE   = 35   # frames the beam is live
+    BEAM_HALF_W   = 12   # half-width for collision check
+
+    def __init__(self):
+        self.x      = float(ROOM_X + ROOM_COLS * TILE // 2 - self.W // 2)
+        self.y      = float(ROOM_Y + 2 * TILE + 10)
+        self.hp     = self.MAX_HP
+        self.lag_hp = float(self.MAX_HP)
+        self.alive  = True
+        self.iframes = 0
+        self.phase2 = False
+        self.phase2_just_triggered = False
+        self.strafe  = random.choice((-1, 1))
+        self.arrow_cd = 60
+        self.beam_cd  = 150
+
+        self.beam_state = None   # None | 'telegraph' | 'active'
+        self.beam_timer = 0
+        self.beam_dir   = (1.0, 0.0)
+        self.beam_end   = (0.0, 0.0)
+
+        self.projectiles = []
+
+    @property
+    def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
+
+    @property
+    def cx(self): return self.x + self.W / 2
+
+    @property
+    def cy(self): return self.y + self.H / 2
+
+    def take_damage(self, amount):
+        if not self.iframes:
+            self.hp     -= amount
+            self.iframes = self.IFRAMES
+            if self.hp <= 0:
+                self.hp    = 0
+                self.alive = False
+
+    def update(self, player, walls):
+        if self.iframes:
+            self.iframes -= 1
+        if self.lag_hp > self.hp:
+            self.lag_hp = max(float(self.hp), self.lag_hp - 0.18)
+
+        if not self.phase2 and self.hp <= self.MAX_HP // 2:
+            self.phase2 = True
+            self.phase2_just_triggered = True
+
+        # Freeze movement during beam sequence so the telegraph is readable
+        if self.beam_state is None:
+            dx   = player.cx - self.cx
+            dy   = player.cy - self.cy
+            dist = math.hypot(dx, dy)
+            if 0 < dist < self.AGGRO:
+                spd = self.SPEED * (1.3 if self.phase2 else 1.0)
+                ndx, ndy = dx / dist, dy / dist
+                pd = self.PREFER_DIST
+                if dist < pd - 25:
+                    mx, my = -ndx * spd * 0.8, -ndy * spd * 0.8
+                elif dist > pd + 60:
+                    mx, my = ndx * spd, ndy * spd
+                else:
+                    if random.random() < 0.008:
+                        self.strafe *= -1
+                    mx = -ndy * spd * 0.85 * self.strafe
+                    my =  ndx * spd * 0.85 * self.strafe
+                self.x += mx
+                for w in walls:
+                    if self.rect.colliderect(w):
+                        self.x = w.right if mx < 0 else w.left - self.W
+                        self.strafe *= -1
+                self.y += my
+                for w in walls:
+                    if self.rect.colliderect(w):
+                        self.y = w.bottom if my < 0 else w.top - self.H
+                        self.strafe *= -1
+
+        if self.rect.colliderect(player.rect):
+            player.take_damage(1)
+
+        # Triple bolt attack
+        if self.beam_state is None:
+            if self.arrow_cd > 0:
+                self.arrow_cd -= 1
+            else:
+                self._shoot_triple(player)
+                self.arrow_cd = self.ARROW_CD_P2 if self.phase2 else self.ARROW_CD_N
+
+        # Beam sequence
+        if self.beam_state is None:
+            if self.beam_cd > 0:
+                self.beam_cd -= 1
+            else:
+                self._start_beam(player)
+        elif self.beam_state == 'telegraph':
+            self.beam_timer -= 1
+            if self.beam_timer <= 0:
+                self.beam_state = 'active'
+                self.beam_timer = self.BEAM_ACTIVE
+        elif self.beam_state == 'active':
+            self._check_beam_hit(player)
+            self.beam_timer -= 1
+            if self.beam_timer <= 0:
+                self.beam_state = None
+                self.beam_cd = self.BEAM_CD_P2 if self.phase2 else self.BEAM_CD_N
+
+        for p in self.projectiles:
+            p.update(player)
+        self.projectiles = [p for p in self.projectiles if p.alive]
+
+    def _shoot_triple(self, player):
+        dx   = player.cx - self.cx
+        dy   = player.cy - self.cy
+        dist = math.hypot(dx, dy)
+        if dist == 0:
+            return
+        base = math.atan2(dy, dx)
+        for deg in (-18, 0, 18):
+            a = base + math.radians(deg)
+            self.projectiles.append(
+                Projectile(self.cx, self.cy,
+                           math.cos(a) * 3.5, math.sin(a) * 3.5,
+                           damage=1, kind='witch_bolt', lifetime=270)
+            )
+
+    def _start_beam(self, player):
+        dx   = player.cx - self.cx
+        dy   = player.cy - self.cy
+        dist = math.hypot(dx, dy)
+        if dist == 0:
+            return
+        bdx, bdy = dx / dist, dy / dist
+        self.beam_dir   = (bdx, bdy)
+        self.beam_end   = _ray_room_end(self.cx, self.cy, bdx, bdy)
+        self.beam_state = 'telegraph'
+        self.beam_timer = self.BEAM_TEL
+
+    def _check_beam_hit(self, player):
+        bx, by = self.beam_end
+        d = _pt_seg_dist(player.cx, player.cy,
+                         self.cx, self.cy, bx, by)
+        if d < self.BEAM_HALF_W + 8:
+            player.take_damage(2)
+
+    def draw_projectiles(self, surf, tick):
+        for p in self.projectiles:
+            p.draw(surf, tick)
+
+        if self.beam_state == 'telegraph':
+            frac  = 1.0 - self.beam_timer / self.BEAM_TEL
+            alpha = int(60 + 140 * frac)
+            ex, ey = self.beam_end
+            s = pygame.Surface((surf.get_width(), surf.get_height()), pygame.SRCALPHA)
+            pygame.draw.line(s, (220, 100, 255, alpha),
+                             (int(self.cx), int(self.cy)), (int(ex), int(ey)), 8)
+            pygame.draw.line(s, (255, 220, 255, alpha // 2),
+                             (int(self.cx), int(self.cy)), (int(ex), int(ey)), 2)
+            surf.blit(s, (0, 0))
+
+        elif self.beam_state == 'active':
+            t_frac = self.beam_timer / self.BEAM_ACTIVE
+            alpha  = int(180 + 75 * t_frac)
+            bx, by = int(self.beam_end[0]), int(self.beam_end[1])
+            s = pygame.Surface((surf.get_width(), surf.get_height()), pygame.SRCALPHA)
+            pygame.draw.line(s, (255, 120, 255, alpha),
+                             (int(self.cx), int(self.cy)), (bx, by),
+                             self.BEAM_HALF_W * 2)
+            pygame.draw.line(s, (255, 255, 255, min(255, alpha)),
+                             (int(self.cx), int(self.cy)), (bx, by), 4)
+            surf.blit(s, (0, 0))
+
+    def draw(self, surf, tick):
+        flash = self.iframes and (self.iframes // 3) % 2 == 0
+        if flash:
+            col, outline = HIT_COL, HIT_COL
+        elif self.phase2:
+            col, outline = (190, 75, 240), (240, 170, 255)
+        else:
+            col, outline = (130, 55, 190), (200, 140, 255)
+
+        r = self.rect
+        pygame.draw.rect(surf, col, r)
+        pygame.draw.rect(surf, outline, r, 2)
+
+        ey_col = (255, 80, 80) if self.phase2 else (255, 240, 80)
+        for ex in (int(self.cx) - 5, int(self.cx) + 5):
+            pygame.draw.circle(surf, ey_col,          (ex, int(self.cy) - 2), 3)
+            pygame.draw.circle(surf, (255, 255, 200), (ex, int(self.cy) - 2), 1)
+
+
 class Boss:
     """Cazarog — fires fireballs and homing missiles; enrages at 50 % HP."""
 
     W, H       = 32, 32
-    MAX_HP     = 30
+    MAX_HP     = 40
     SPEED      = 0.65
     IFRAMES    = 30
     AGGRO      = 500

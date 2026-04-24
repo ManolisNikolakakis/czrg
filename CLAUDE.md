@@ -16,30 +16,40 @@ release on itch.io.
 
 ## Current State of the Game
 
-6 rooms total, structured as:
+9 rooms total, structured as:
 
 | Room | Type        | Notes                                      |
 |------|-------------|--------------------------------------------|
 | 1    | Normal      | 5 enemies, mixed melee/ranged              |
 | 2    | Normal      | 7 enemies, more ranged                     |
-| 3    | Miniboss    | Salomon the Stone Golem                    |
+| 3    | Miniboss    | Bambie the Witch                           |
 | 4    | Normal      | 8 enemies, harder stats                    |
-| 5    | Normal      | 9 enemies, hardest regular room            |
-| 6    | Final Boss  | Cazarog                                    |
+| 5    | Normal      | 9 enemies                                  |
+| 6    | Miniboss    | Salomon the Stone Golem                    |
+| 7    | Normal      | 9 enemies, harder stats                    |
+| 8    | Normal      | 10 enemies, hardest regular room           |
+| 9    | Final Boss  | Cazarog                                    |
 
 **Player abilities:**
 - 8-directional WASD movement
-- SPACE — melee attack
+- SPACE — melee attack (AoE 36px base, 54px with Attack powerup)
 - E — shoot arrow (up to 3, recharge over time)
 - Q — throw bomb (AoE, 1 charge, slow recharge)
 
 **Enemy types:**
 - Melee enemy — chases and deals contact damage
 - Ranged enemy — keeps distance, fires fireballs
-- Salomon (miniboss, room 3) — see below
-- Cazarog (final boss, room 6) — fires fireballs and homing missiles; enrages at 50% HP spawning 4 minions
+- Bambie (miniboss, room 3) — see below
+- Salomon (miniboss, room 6) — see below
+- Cazarog (final boss, room 9) — fires fireballs and homing missiles; enrages at 50% HP spawning 4 minions
 
-**Salomon the Stone Golem (room 3):**
+**Bambie the Witch (room 3):**
+- Fast movement, prefers to keep distance and strafe
+- Triple bolt attack: fires 3 witch bolts in a spread (-18°, 0°, +18°) toward the player
+- Beam attack: freezes in place, telegraphs direction for 1.5s (glowing purple line), then fires a full-width beam (deals 2 damage) — phase 2 interval is shorter
+- Phase 2 (50% HP): faster, shorter attack cooldowns, spawns 2 ranged minions
+
+**Salomon the Stone Golem (room 6):**
 - Slow, heavy movement
 - Earthquake ability: every ~4.7s spawns 9 cracked floor tiles (orange glow) that deal 1 damage on contact; tiles last ~3.3s
 - Proximity slam: if the player stays within 88px for 3 continuous seconds, Salomon fires an expanding AoE ring (130px radius, 2 damage); a red warning ring grows as the timer builds; 6s cooldown after each slam
@@ -138,16 +148,18 @@ release on itch.io.
 
 ### Done ✅
 - [x] Player movement (8-directional WASD)
-- [x] Melee combat
+- [x] Melee combat (increased AoE: 36px base, 54px boosted)
 - [x] Arrow and bomb projectiles
-- [x] 6-room structure with 2 boss rooms
+- [x] 9-room structure with 3 boss rooms
 - [x] Ranged enemies with fireballs
-- [x] Salomon the Stone Golem (miniboss, room 3)
-- [x] Cazarog (final boss, room 6) with phase 2
+- [x] Bambie the Witch (miniboss, room 3) — triple bolts + telegraphed beam
+- [x] Salomon the Stone Golem (miniboss, room 6)
+- [x] Cazarog (final boss, room 9, 40 HP) with phase 2
 - [x] Health items and powerups
 - [x] High score leaderboard (top 20)
 - [x] Win screen with score calculation and name entry
 - [x] Pause menu
+- [x] 1280×720 resolution (40×22 tile room)
 
 ### Up Next 🔧
 - [ ] Procedural dungeon generation

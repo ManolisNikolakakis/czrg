@@ -63,7 +63,7 @@ class Player:
 
     @property
     def atk_size(self):
-        return 42 if self.attack_timer else 26
+        return 54 if self.attack_timer else 36
 
     @property
     def eff_cd(self):

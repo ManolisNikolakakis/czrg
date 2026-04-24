@@ -2,14 +2,14 @@ import pygame
 import os
 
 # ── Screen / timing ──────────────────────────────────────────────────────────
-SCREEN_W, SCREEN_H = 800, 600
+SCREEN_W, SCREEN_H = 1280, 720
 TILE        = 32
 FPS         = 60
-TOTAL_ROOMS = 6
+TOTAL_ROOMS = 9
 
 # ── Room geometry ─────────────────────────────────────────────────────────────
-ROOM_COLS = 25
-ROOM_ROWS = 18
+ROOM_COLS = 40
+ROOM_ROWS = 22
 ROOM_X    = 0
 ROOM_Y    = (SCREEN_H - ROOM_ROWS * TILE) // 2
 
@@ -72,10 +72,12 @@ NAME_ENTRY = 'name_entry'
 SCORES     = 'scores'
 
 # ── Per-room enemy config: {room_num: (count, hp, speed)} ────────────────────
-# Rooms 3 (Salomon) and 6 (Cazarog) are boss rooms — not in this table.
+# Rooms 3 (Bambie), 6 (Salomon), 9 (Cazarog) are boss rooms — not in this table.
 ROOM_CONFIG = {
-    1: (5, 3, 0.90),
-    2: (7, 4, 1.00),
-    4: (8, 4, 1.05),
-    5: (9, 5, 1.10),
+    1: (5,  3, 0.90),
+    2: (7,  4, 1.00),
+    4: (8,  4, 1.05),
+    5: (9,  5, 1.10),
+    7: (9,  5, 1.15),
+    8: (10, 6, 1.20),
 }

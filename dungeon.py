@@ -8,7 +8,7 @@ from constants import (
     PORTAL_COL, PORTAL_GLOW,
     ROOM_CONFIG,
 )
-from enemies import Enemy, RangedEnemy, Boss, Salomon
+from enemies import Enemy, RangedEnemy, Boss, Salomon, Bambie
 from items import Item
 from player import Player
 
@@ -59,9 +59,12 @@ def draw_room(surf, walls, room_num):
     if room_num == TOTAL_ROOMS:       # Cazarog — dark blood red
         fc, grid = (38, 28, 28), (52, 36, 36)
         wc, we   = (95, 60, 60),  (70, 42, 42)
-    elif room_num == 3:               # Salomon — stone grey
+    elif room_num == 6:               # Salomon — stone grey
         fc, grid = (46, 41, 35),  (58, 52, 44)
         wc, we   = (86, 76, 64),  (66, 57, 47)
+    elif room_num == 3:               # Bambie — witch lair dark purple
+        fc, grid = (28, 22, 38),  (40, 32, 54)
+        wc, we   = (70, 50, 100), (52, 36, 76)
     else:
         fc, grid = FLOOR_COL,     (48, 42, 36)
         wc, we   = WALL_COL,      WALL_EDGE
@@ -115,6 +118,15 @@ def spawn_enemies(room_num):
         else:
             enemies.append(Enemy(x, y, hp=hp, speed=spd))
     return enemies
+
+
+def spawn_bambie_minions():
+    m = 2 * TILE + 12
+    corners = [
+        (ROOM_X + m,                      ROOM_Y + m),
+        (ROOM_X + (ROOM_COLS - 3) * TILE, ROOM_Y + (ROOM_ROWS - 3) * TILE),
+    ]
+    return [RangedEnemy(x, y, hp=3, speed=1.1) for x, y in corners]
 
 
 def spawn_salomon_minions():
@@ -172,8 +184,10 @@ def setup_room(room_num):
     """Returns (enemies_list, boss_or_None) for the given room."""
     if room_num == TOTAL_ROOMS:
         return [], Boss()
-    if room_num == 3:
+    if room_num == 6:
         return [], Salomon()
+    if room_num == 3:
+        return [], Bambie()
     return spawn_enemies(room_num), None
 
 

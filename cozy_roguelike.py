@@ -9,8 +9,9 @@ from constants import (
 )
 from dungeon  import (Portal, build_walls, draw_room,
                       spawn_boss_minions, spawn_salomon_minions,
+                      spawn_bambie_minions,
                       spawn_items, setup_room, new_game)
-from enemies  import Salomon
+from enemies  import Salomon, Bambie
 from ui       import (NameEntry, draw_hud, draw_boss_bar, draw_end_panel,
                       draw_room_banner, draw_menu, draw_scores_screen,
                       draw_name_entry_screen, draw_pause_screen)
@@ -222,6 +223,9 @@ def main():
                     if isinstance(boss, Salomon):
                         enemies.extend(spawn_salomon_minions())
                         banner_text = "SALOMON ENRAGED!"
+                    elif isinstance(boss, Bambie):
+                        enemies.extend(spawn_bambie_minions())
+                        banner_text = "BAMBIE ENRAGED!"
                     else:
                         enemies.extend(spawn_boss_minions())
                         banner_text = "CAZAROG ENRAGED!"
@@ -248,8 +252,10 @@ def main():
                 player.place_at_center()
                 if room_num == TOTAL_ROOMS:
                     banner_text = "CAZAROG AWAITS…"
-                elif room_num == 3:
+                elif room_num == 6:
                     banner_text = "SALOMON AWAITS…"
+                elif room_num == 3:
+                    banner_text = "BAMBIE AWAITS…"
                 else:
                     banner_text = f"Room {room_num} / {TOTAL_ROOMS}"
                 banner_timer = 100

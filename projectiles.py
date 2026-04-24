@@ -7,7 +7,7 @@ from constants import INNER_RECT, FIREBALL_COL, MISSILE_COL, PLAYER_ARROW_C, BOM
 class Projectile:
     """Enemy / boss ranged attack — fireball or homing missile."""
 
-    _SIZE = {'fireball': 14, 'missile': 7}
+    _SIZE = {'fireball': 14, 'missile': 7, 'witch_bolt': 9}
 
     def __init__(self, x, y, vx, vy, damage, kind, lifetime=220, homing=False):
         self.x        = float(x)
@@ -58,6 +58,10 @@ class Projectile:
             inner = r.inflate(-4, -4)
             if inner.w > 0:
                 pygame.draw.rect(surf, (255, 220, 60), inner)
+        elif self.kind == 'witch_bolt':
+            sz = self._SIZE['witch_bolt']
+            pygame.draw.circle(surf, (180, 70, 230), (int(self.x), int(self.y)), sz // 2)
+            pygame.draw.circle(surf, (240, 170, 255), (int(self.x), int(self.y)), sz // 2 - 2)
         else:
             pygame.draw.rect(surf, MISSILE_COL, r)
             spd = math.hypot(self.vx, self.vy)
