@@ -8,7 +8,7 @@ from constants import (
     PORTAL_COL, PORTAL_GLOW,
     ROOM_CONFIG,
 )
-from enemies import Enemy, RangedEnemy, Boss
+from enemies import Enemy, RangedEnemy, Boss, Salomon
 from items import Item
 from player import Player
 
@@ -56,10 +56,15 @@ def build_walls():
 
 
 def draw_room(surf, walls, room_num):
-    fc   = (38, 28, 28) if room_num == TOTAL_ROOMS else FLOOR_COL
-    grid = (52, 36, 36) if room_num == TOTAL_ROOMS else (48, 42, 36)
-    wc   = (95, 60, 60) if room_num == TOTAL_ROOMS else WALL_COL
-    we   = (70, 42, 42) if room_num == TOTAL_ROOMS else WALL_EDGE
+    if room_num == TOTAL_ROOMS:       # Cazarog — dark blood red
+        fc, grid = (38, 28, 28), (52, 36, 36)
+        wc, we   = (95, 60, 60),  (70, 42, 42)
+    elif room_num == 3:               # Salomon — stone grey
+        fc, grid = (46, 41, 35),  (58, 52, 44)
+        wc, we   = (86, 76, 64),  (66, 57, 47)
+    else:
+        fc, grid = FLOOR_COL,     (48, 42, 36)
+        wc, we   = WALL_COL,      WALL_EDGE
     pygame.draw.rect(surf, fc,
         pygame.Rect(ROOM_X + TILE, ROOM_Y + TILE, (ROOM_COLS - 2) * TILE, (ROOM_ROWS - 2) * TILE))
     for col in range(1, ROOM_COLS - 1):
@@ -101,7 +106,7 @@ def _spawn_positions(count):
 
 
 def spawn_enemies(room_num):
-    count, hp, spd = ROOM_CONFIG[room_num - 1]
+    count, hp, spd = ROOM_CONFIG[room_num]
     ranged_chance  = 0.25 if room_num == 1 else 0.40
     enemies = []
     for x, y in _spawn_positions(count):
@@ -110,6 +115,19 @@ def spawn_enemies(room_num):
         else:
             enemies.append(Enemy(x, y, hp=hp, speed=spd))
     return enemies
+
+
+def spawn_salomon_minions():
+    m = 2 * TILE + 12
+    corners = [
+        (ROOM_X + m,                      ROOM_Y + m),
+        (ROOM_X + (ROOM_COLS - 3) * TILE, ROOM_Y + (ROOM_ROWS - 3) * TILE),
+    ]
+    return [
+        RangedEnemy(x, y, hp=3, speed=0.85) if i % 2 == 0
+        else Enemy(x, y, hp=3, speed=1.0)
+        for i, (x, y) in enumerate(corners)
+    ]
 
 
 def spawn_boss_minions():
@@ -154,6 +172,8 @@ def setup_room(room_num):
     """Returns (enemies_list, boss_or_None) for the given room."""
     if room_num == TOTAL_ROOMS:
         return [], Boss()
+    if room_num == 3:
+        return [], Salomon()
     return spawn_enemies(room_num), None
 
 

@@ -4,14 +4,16 @@ import json
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
-    SCORES_FILE, MENU, PLAYING, NAME_ENTRY, SCORES,
+    SCORES_FILE, MENU, PLAYING, PAUSED, NAME_ENTRY, SCORES,
     OVERLAY_R, OVERLAY_W, SPEED_COL,
 )
 from dungeon  import (Portal, build_walls, draw_room,
-                      spawn_boss_minions, spawn_items, setup_room, new_game)
+                      spawn_boss_minions, spawn_salomon_minions,
+                      spawn_items, setup_room, new_game)
+from enemies  import Salomon
 from ui       import (NameEntry, draw_hud, draw_boss_bar, draw_end_panel,
                       draw_room_banner, draw_menu, draw_scores_screen,
-                      draw_name_entry_screen)
+                      draw_name_entry_screen, draw_pause_screen)
 
 pygame.init()
 
@@ -77,6 +79,7 @@ def main():
     ne            = None
     highlight_idx = -1
     tick          = 0
+    pause_sel     = 0
 
     def _reset():
         nonlocal walls, player, enemies, items, boss
@@ -134,11 +137,32 @@ def main():
                             if b:
                                 player_bombs.append(b)
                         elif event.key == pygame.K_ESCAPE:
-                            state = MENU
+                            pause_sel = 0
+                            state = PAUSED
                     else:
                         if event.key == pygame.K_r:
-                            _reset()
+                            if won and is_top20(final_score, scores):
+                                ne    = NameEntry(final_score)
+                                state = NAME_ENTRY
+                            else:
+                                _reset()
                         elif event.key == pygame.K_ESCAPE:
+                            state = MENU
+
+                elif state == PAUSED:
+                    if event.key in (pygame.K_UP, pygame.K_w):
+                        pause_sel = (pause_sel - 1) % 3
+                    elif event.key in (pygame.K_DOWN, pygame.K_s):
+                        pause_sel = (pause_sel + 1) % 3
+                    elif event.key == pygame.K_ESCAPE:
+                        state = PLAYING
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                        if pause_sel == 0:
+                            state = PLAYING
+                        elif pause_sel == 1:
+                            _reset()
+                            state = PLAYING
+                        else:
                             state = MENU
 
                 elif state == NAME_ENTRY:
@@ -195,34 +219,40 @@ def main():
                     boss.take_damage(1)
                 if boss.phase2_just_triggered:
                     boss.phase2_just_triggered = False
-                    enemies.extend(spawn_boss_minions())
-                    banner_text  = "CAZAROG ENRAGED!"
+                    if isinstance(boss, Salomon):
+                        enemies.extend(spawn_salomon_minions())
+                        banner_text = "SALOMON ENRAGED!"
+                    else:
+                        enemies.extend(spawn_boss_minions())
+                        banner_text = "CAZAROG ENRAGED!"
                     banner_timer = 100
-                if not boss.alive:
-                    boss = None
+            # Nullify boss regardless of how it died (melee OR projectile kill)
+            if boss and not boss.alive:
+                boss = None
 
-            # Portal spawns when room is fully cleared
+            # Portal spawns when room is cleared (non-final rooms only)
             if not enemies and boss is None and portal is None:
-                portal = Portal()
-
-            # Portal entry
-            if portal and player.rect.inflate(4, 4).colliderect(portal.rect):
                 if room_num < TOTAL_ROOMS:
-                    room_num    += 1
-                    enemies, boss = setup_room(room_num)
-                    items         = spawn_items()
-                    portal        = None
-                    player.place_at_center()
-                    banner_text  = ("CAZAROG AWAITS…" if room_num == TOTAL_ROOMS
-                                    else f"Room {room_num} / {TOTAL_ROOMS}")
-                    banner_timer = 100
-                else:
+                    portal = Portal()
+                elif not won:
                     won = True
                     final_score, speed_bonus, survival_bonus = calculate_score(
                         elapsed, player.total_damage)
-                    if is_top20(final_score, scores):
-                        ne    = NameEntry(final_score)
-                        state = NAME_ENTRY
+
+            # Portal entry
+            if portal and player.rect.inflate(4, 4).colliderect(portal.rect):
+                room_num    += 1
+                enemies, boss = setup_room(room_num)
+                items         = spawn_items()
+                portal        = None
+                player.place_at_center()
+                if room_num == TOTAL_ROOMS:
+                    banner_text = "CAZAROG AWAITS…"
+                elif room_num == 3:
+                    banner_text = "SALOMON AWAITS…"
+                else:
+                    banner_text = f"Room {room_num} / {TOTAL_ROOMS}"
+                banner_timer = 100
 
             if player.hp <= 0:
                 game_over = True
@@ -263,11 +293,32 @@ def main():
                                elapsed, player.total_damage,
                                final_score, speed_bonus, survival_bonus, best_sc)
             elif won:
+                win_hint = ("R enter name   ESC menu"
+                            if is_top20(final_score, scores) else "R restart   ESC menu")
                 draw_end_panel(screen, font, font_big, "YOU WIN!", OVERLAY_W,
                                elapsed, player.total_damage,
-                               final_score, speed_bonus, survival_bonus, best_sc)
+                               final_score, speed_bonus, survival_bonus, best_sc, win_hint)
 
             draw_room_banner(screen, font_big, banner_text, banner_timer)
+
+        elif state == PAUSED:
+            # Draw frozen game world underneath the overlay
+            screen.fill((10, 8, 12))
+            draw_room(screen, walls, room_num)
+            for item in items:        item.draw(screen, tick)
+            for a in player_arrows:   a.draw(screen)
+            for e in enemies:         e.draw_projectiles(screen, tick)
+            if boss:                  boss.draw_projectiles(screen, tick)
+            for b in player_bombs:    b.draw(screen, tick)
+            if portal:                portal.draw(screen, tick)
+            for e in enemies:         e.draw(screen)
+            if boss:                  boss.draw(screen, tick)
+            player.draw(screen)
+            draw_hud(screen, font, player, enemies, elapsed,
+                     scores[0]['score'] if scores else 0,
+                     room_num, portal, boss)
+            draw_boss_bar(screen, font, font_big, boss)
+            draw_pause_screen(screen, font, font_big, pause_sel)
 
         elif state == NAME_ENTRY:
             draw_name_entry_screen(screen, font, font_big, ne, tick)

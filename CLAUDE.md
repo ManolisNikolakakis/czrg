@@ -16,11 +16,46 @@ release on itch.io.
 
 ## Current State of the Game
 
-- 3 dungeon rooms + a final boss room
-- Melee and ranged enemies
-- Arrow projectiles
-- Powerups and health items
-- High score leaderboard
+6 rooms total, structured as:
+
+| Room | Type        | Notes                                      |
+|------|-------------|--------------------------------------------|
+| 1    | Normal      | 5 enemies, mixed melee/ranged              |
+| 2    | Normal      | 7 enemies, more ranged                     |
+| 3    | Miniboss    | Salomon the Stone Golem                    |
+| 4    | Normal      | 8 enemies, harder stats                    |
+| 5    | Normal      | 9 enemies, hardest regular room            |
+| 6    | Final Boss  | Cazarog                                    |
+
+**Player abilities:**
+- 8-directional WASD movement
+- SPACE — melee attack
+- E — shoot arrow (up to 3, recharge over time)
+- Q — throw bomb (AoE, 1 charge, slow recharge)
+
+**Enemy types:**
+- Melee enemy — chases and deals contact damage
+- Ranged enemy — keeps distance, fires fireballs
+- Salomon (miniboss, room 3) — see below
+- Cazarog (final boss, room 6) — fires fireballs and homing missiles; enrages at 50% HP spawning 4 minions
+
+**Salomon the Stone Golem (room 3):**
+- Slow, heavy movement
+- Earthquake ability: every ~4.7s spawns 9 cracked floor tiles (orange glow) that deal 1 damage on contact; tiles last ~3.3s
+- Proximity slam: if the player stays within 88px for 3 continuous seconds, Salomon fires an expanding AoE ring (130px radius, 2 damage); a red warning ring grows as the timer builds; 6s cooldown after each slam
+- Phase 2 (50% HP): earthquakes escalate (14 tiles, ~2.7s interval), speed increases, spawns 2 reinforcements
+
+**Items:**
+- Health — restores 4 HP
+- Speed — movement boost for ~6s
+- Attack — enlarged attack hitbox for ~6s
+- Invuln — brief invincibility
+
+**Game systems:**
+- High score leaderboard (top 20, saved to highscores.json)
+- Score = speed bonus + survival bonus; prompted on win if top 20
+- Pause menu (ESC during play): Resume / Restart / Quit to Menu
+- Portal spawns after each non-boss room is cleared; boss rooms trigger win/next-room directly
 
 ---
 
@@ -42,14 +77,32 @@ release on itch.io.
 
 ---
 
-## Code Architecture Rules
+## Code Architecture
 
-- Always keep code modular — separate files for player, enemies, dungeon, UI, items, projectiles
+| File               | Responsibility                                      |
+|--------------------|-----------------------------------------------------|
+| `cozy_roguelike.py`| Main game loop, state machine, score helpers        |
+| `player.py`        | Player class (movement, combat, items, draw)        |
+| `enemies.py`       | Enemy, RangedEnemy, Salomon, Boss classes           |
+| `dungeon.py`       | Room drawing, wall building, spawning, Portal class |
+| `items.py`         | Item class                                          |
+| `projectiles.py`   | Projectile, PlayerArrow, Bomb classes               |
+| `ui.py`            | All draw functions (HUD, menus, panels, banners)    |
+| `constants.py`     | All shared constants, colours, room configs         |
+
+**Game states:** `MENU` → `PLAYING` ↔ `PAUSED` → `NAME_ENTRY` → `SCORES`
+
+**Boss interface** — both Salomon and Boss share: `alive`, `hp`, `MAX_HP`, `lag_hp`,
+`phase2`, `phase2_just_triggered`, `name`, `hp_bar_col`, `rect`, `cx`, `cy`,
+`projectiles`, `update(player, walls)`, `take_damage(n)`, `draw(surf, tick)`,
+`draw_projectiles(surf, tick)`.
+
+**Rules:**
+- Always keep code modular — separate files per domain
 - Never put everything in one file
-- Each module should be independently readable and testable
-- Use clear, descriptive variable and function names
-- Add a brief comment above any non-obvious logic
-- Always check for and fix any existing bugs before adding new features
+- Use clear, descriptive names
+- Add a comment only when the WHY is non-obvious
+- Always check for and fix existing bugs before adding new features
 
 ---
 
@@ -58,23 +111,26 @@ release on itch.io.
 - All pixel art is **human-made** by the developer — do not suggest or use AI-generated art
 - All music is **human-made** by the developer — do not suggest or use AI-generated music
 - Placeholder art should use simple coloured rectangles with a warm colour palette
-- Warm palette reference: soft greens, warm yellows, earthy browns, muted reds
 
 ---
 
 ## Placeholder Art Colour Palette
 
-| Element        | Colour (RGB)         |
-|----------------|----------------------|
-| Player         | (100, 180, 100) green|
-| Melee enemy    | (180, 80, 80) red    |
-| Ranged enemy   | (180, 120, 60) orange|
-| Boss           | (140, 60, 140) purple|
-| Health item    | (220, 80, 80) bright red |
-| Powerup        | (80, 160, 220) blue  |
-| Arrow          | (220, 200, 80) yellow|
-| Floor          | (60, 50, 40) dark brown |
-| Walls          | (40, 35, 30) darker brown |
+| Element        | Colour (RGB)              |
+|----------------|---------------------------|
+| Player         | (95, 200, 130) green      |
+| Melee enemy    | (210, 75, 75) red         |
+| Ranged enemy   | (200, 155, 40) orange     |
+| Salomon        | (108, 96, 84) stone grey  |
+| Cazarog        | (120, 40, 170) purple     |
+| Health item    | (220, 80, 80) bright red  |
+| Powerup        | (80, 160, 220) blue       |
+| Arrow          | (190, 245, 80) yellow-green|
+| Hazard tile    | (200, 75, 15) lava orange |
+| Floor          | (42, 36, 30) dark brown   |
+| Walls          | (78, 70, 62) brown        |
+| Salomon's room | (46, 41, 35) stone floor  |
+| Cazarog's room | (38, 28, 28) blood floor  |
 
 ---
 
@@ -83,13 +139,17 @@ release on itch.io.
 ### Done ✅
 - [x] Player movement (8-directional WASD)
 - [x] Melee combat
-- [x] 3 dungeon rooms + boss room
-- [x] Ranged enemies with arrow projectiles
+- [x] Arrow and bomb projectiles
+- [x] 6-room structure with 2 boss rooms
+- [x] Ranged enemies with fireballs
+- [x] Salomon the Stone Golem (miniboss, room 3)
+- [x] Cazarog (final boss, room 6) with phase 2
 - [x] Health items and powerups
-- [x] High score leaderboard
+- [x] High score leaderboard (top 20)
+- [x] Win screen with score calculation and name entry
+- [x] Pause menu
 
 ### Up Next 🔧
-- [ ] Main menu screen
 - [ ] Procedural dungeon generation
 - [ ] More enemy variety
 - [ ] Player character progression between rooms

@@ -149,32 +149,36 @@ def draw_hud(surf, font, player, enemies, elapsed_ticks, best_score,
 def draw_boss_bar(surf, font, font_big, boss):
     if not boss or not boss.alive:
         return
-    BW, BH = 560, 22
-    bx = (SCREEN_W - BW) // 2
-    by = SCREEN_H - 58
+    BW, BH   = 560, 22
+    bx       = (SCREEN_W - BW) // 2
+    by       = SCREEN_H - 58
+    bar_fill, bar_hi = getattr(boss, 'hp_bar_col', ((160, 28, 28), (210, 60, 60)))
     nc = (220, 80, 80) if boss.phase2 else BOSS_NAME_C
-    nt = font_big.render("CAZAROG", True, nc)
+    nt = font_big.render(boss.name, True, nc)
     surf.blit(nt, (SCREEN_W // 2 - nt.get_width() // 2, by - 30))
     if boss.phase2:
         et = font.render("— ENRAGED —", True, (200, 70, 50))
         surf.blit(et, (SCREEN_W // 2 - et.get_width() // 2, by - 12))
-    pygame.draw.rect(surf, (22, 10, 10), (bx, by, BW, BH))
+    pygame.draw.rect(surf, (20, 16, 12), (bx, by, BW, BH))
     lag_fill = max(0, int(BW * boss.lag_hp / boss.MAX_HP))
     if lag_fill:
         pygame.draw.rect(surf, (180, 140, 30), (bx, by, lag_fill, BH))
     fill = max(0, int(BW * boss.hp / boss.MAX_HP))
     if fill:
-        pygame.draw.rect(surf, (160, 28, 28), (bx, by, fill, BH))
-        pygame.draw.rect(surf, (210, 60, 60), (bx, by, fill, BH // 3))
-    pygame.draw.line(surf, (120, 80, 80), (bx + BW // 2, by), (bx + BW // 2, by + BH), 1)
-    pygame.draw.rect(surf, (100, 60, 60), (bx, by, BW, BH), 1)
+        pygame.draw.rect(surf, bar_fill, (bx, by, fill, BH))
+        pygame.draw.rect(surf, bar_hi,   (bx, by, fill, BH // 3))
+    mid_col = tuple(max(0, c - 60) for c in bar_fill)
+    pygame.draw.line(surf, mid_col, (bx + BW // 2, by), (bx + BW // 2, by + BH), 1)
+    brd_col = tuple(max(0, c - 40) for c in bar_fill)
+    pygame.draw.rect(surf, brd_col, (bx, by, BW, BH), 1)
     ht = font.render(f"{max(0, boss.hp)} / {boss.MAX_HP}", True, (190, 160, 150))
     surf.blit(ht, (SCREEN_W // 2 - ht.get_width() // 2, by + 3))
 
 
 def draw_end_panel(surf, font, font_big, title, title_col,
                    elapsed_ticks, damage_taken, score,
-                   speed_bonus, survival_bonus, best_score):
+                   speed_bonus, survival_bonus, best_score,
+                   hint="R restart   ESC menu"):
     pw, ph = 300, 218
     px = (SCREEN_W - pw) // 2
     py = (SCREEN_H - ph) // 2
@@ -204,7 +208,7 @@ def draw_end_panel(surf, font, font_big, title, title_col,
     row_lr("SCORE:", f"{score:,}", y, rc=GOLD_COL);  y += lh + 4
     if best_score:
         row_lr("Best:", f"{best_score:,}", y, rc=UI_MUTED)
-    row("R restart   ESC menu", py + ph - 20, UI_MUTED)
+    row(hint, py + ph - 20, UI_MUTED)
 
 
 def draw_room_banner(surf, font_big, text, timer):
@@ -221,6 +225,30 @@ def draw_room_banner(surf, font_big, text, timer):
     bg.fill((0, 0, 0, int(180 * fade / 255)))
     surf.blit(bg, (bx, by))
     surf.blit(t, (SCREEN_W // 2 - t.get_width() // 2, by + pad // 2))
+
+
+# ── Pause overlay ─────────────────────────────────────────────────────────────
+
+def draw_pause_screen(surf, font, font_big, sel):
+    overlay = pygame.Surface((SCREEN_W, SCREEN_H), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 160))
+    surf.blit(overlay, (0, 0))
+
+    cx = SCREEN_W // 2
+    t  = font_big.render("PAUSED", True, UI_WHITE)
+    surf.blit(t, (cx - t.get_width() // 2, SCREEN_H // 2 - 90))
+    pygame.draw.line(surf, (80, 70, 60),
+                     (cx - 100, SCREEN_H // 2 - 58), (cx + 100, SCREEN_H // 2 - 58))
+
+    options = ("RESUME", "RESTART", "QUIT TO MENU")
+    for i, label in enumerate(options):
+        active = i == sel
+        t = font_big.render((">  " if active else "   ") + label,
+                            True, GOLD_COL if active else UI_MUTED)
+        surf.blit(t, (cx - t.get_width() // 2, SCREEN_H // 2 - 40 + i * 46))
+
+    t = font.render("W/S  ↑↓  navigate     ENTER  select     ESC  resume", True, (65, 58, 50))
+    surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
 
 
 # ── Menu screens ──────────────────────────────────────────────────────────────

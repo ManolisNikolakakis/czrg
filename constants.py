@@ -5,7 +5,7 @@ import os
 SCREEN_W, SCREEN_H = 800, 600
 TILE        = 32
 FPS         = 60
-TOTAL_ROOMS = 3
+TOTAL_ROOMS = 6
 
 # ── Room geometry ─────────────────────────────────────────────────────────────
 ROOM_COLS = 25
@@ -67,11 +67,15 @@ PANEL_COL      = (18,  14,  20, 215)
 # ── Game states ───────────────────────────────────────────────────────────────
 MENU       = 'menu'
 PLAYING    = 'playing'
+PAUSED     = 'paused'
 NAME_ENTRY = 'name_entry'
 SCORES     = 'scores'
 
-# ── Per-room enemy config: (count, hp, speed) ─────────────────────────────────
-ROOM_CONFIG = [
-    (5, 3, 0.90),   # room 1
-    (7, 4, 1.00),   # room 2
-]
+# ── Per-room enemy config: {room_num: (count, hp, speed)} ────────────────────
+# Rooms 3 (Salomon) and 6 (Cazarog) are boss rooms — not in this table.
+ROOM_CONFIG = {
+    1: (5, 3, 0.90),
+    2: (7, 4, 1.00),
+    4: (8, 4, 1.05),
+    5: (9, 5, 1.10),
+}
