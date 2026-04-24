@@ -191,8 +191,8 @@ def setup_room(room_num):
     return spawn_enemies(room_num), None
 
 
-def new_game():
+def new_game(fighter_name='Pistachio'):
     walls         = build_walls()
-    player        = Player()
+    player        = Player(fighter_name)
     enemies, boss = setup_room(1)
     return walls, player, enemies, spawn_items(), boss

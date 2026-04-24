@@ -30,11 +30,21 @@ release on itch.io.
 | 8    | Normal      | 10 enemies, hardest regular room           |
 | 9    | Final Boss  | Cazarog                                    |
 
+**Selectable fighters** (chosen at character select before each run):
+
+| Fighter   | Colour              | HP | Melee DMG | Melee Range | Arrow DMG | Bomb DMG |
+|-----------|---------------------|----|-----------|-------------|-----------|----------|
+| Pistachio | (95, 200, 130) green | 10 | 1         | 36 / 54 px  | 2         | 8        |
+| Cashew    | (215, 195, 155) beige| 14 | 2         | 46 / 66 px  | 1         | 5        |
+| Almond    | (190, 162, 118) brown| 8  | 1         | 26 / 40 px  | 3         | 13       |
+
+(Melee range: base / with Attack powerup)
+
 **Player abilities:**
 - 8-directional WASD movement
-- SPACE — melee attack (AoE 36px base, 54px with Attack powerup)
-- E — shoot arrow (up to 3, recharge over time)
-- Q — throw bomb (AoE, 1 charge, slow recharge)
+- SPACE — melee attack (AoE size varies by fighter, boosted further by Attack powerup)
+- E — shoot arrow (up to 3, recharge over time; damage varies by fighter)
+- Q — throw bomb (AoE, 1 charge, slow recharge; damage varies by fighter)
 
 **Enemy types:**
 - Melee enemy — chases and deals contact damage
@@ -45,9 +55,9 @@ release on itch.io.
 
 **Bambie the Witch (room 3):**
 - Fast movement, prefers to keep distance and strafe
-- Triple bolt attack: fires 3 witch bolts in a spread (-18°, 0°, +18°) toward the player
-- Beam attack: freezes in place, telegraphs direction for 1.5s (glowing purple line), then fires a full-width beam (deals 2 damage) — phase 2 interval is shorter
-- Phase 2 (50% HP): faster, shorter attack cooldowns, spawns 2 ranged minions
+- Triple bolt attack: fires 3 witch bolts in a spread (−18°, 0°, +18°) toward the player
+- Beam attack: freezes in place, telegraphs direction for 1.5s (glowing purple line), then fires a full-room beam dealing 2 damage — interval shortens in phase 2
+- Phase 2 (50% HP): faster movement, shorter attack cooldowns, spawns 2 ranged minions
 
 **Salomon the Stone Golem (room 6):**
 - Slow, heavy movement
@@ -58,12 +68,15 @@ release on itch.io.
 **Items:**
 - Health — restores 4 HP
 - Speed — movement boost for ~6s
-- Attack — enlarged attack hitbox for ~6s
+- Attack — enlarged melee hitbox for ~6s
 - Invuln — brief invincibility
 
 **Game systems:**
-- High score leaderboard (top 20, saved to highscores.json)
-- Score = speed bonus + survival bonus; prompted on win if top 20
+- Character select screen before each run (Pistachio / Cashew / Almond)
+- High score leaderboard (top 20, saved to highscores.json); each entry records the fighter used, shown as a colour dot in the scores table
+- Score = speed bonus + survival bonus; max 100,000 (speed 60k + survival 40k)
+  - Speed bonus: 60,000 − 38 × seconds (zeroes at ~26 min)
+  - Survival bonus: 40,000 − 800 × damage taken (zeroes at 50 damage)
 - Pause menu (ESC during play): Resume / Restart / Quit to Menu
 - Portal spawns after each non-boss room is cleared; boss rooms trigger win/next-room directly
 
@@ -89,23 +102,28 @@ release on itch.io.
 
 ## Code Architecture
 
-| File               | Responsibility                                      |
-|--------------------|-----------------------------------------------------|
-| `cozy_roguelike.py`| Main game loop, state machine, score helpers        |
-| `player.py`        | Player class (movement, combat, items, draw)        |
-| `enemies.py`       | Enemy, RangedEnemy, Salomon, Boss classes           |
-| `dungeon.py`       | Room drawing, wall building, spawning, Portal class |
-| `items.py`         | Item class                                          |
-| `projectiles.py`   | Projectile, PlayerArrow, Bomb classes               |
-| `ui.py`            | All draw functions (HUD, menus, panels, banners)    |
-| `constants.py`     | All shared constants, colours, room configs         |
+| File               | Responsibility                                           |
+|--------------------|----------------------------------------------------------|
+| `cozy_roguelike.py`| Main game loop, state machine, score helpers             |
+| `player.py`        | Player class (movement, combat, items, draw); reads fighter stats from FIGHTERS |
+| `enemies.py`       | Enemy, RangedEnemy, Bambie, Salomon, Boss classes        |
+| `dungeon.py`       | Room drawing, wall building, spawning, Portal class      |
+| `items.py`         | Item class                                               |
+| `projectiles.py`   | Projectile, PlayerArrow, Bomb classes (damage per-instance) |
+| `ui.py`            | All draw functions (HUD, menus, char select, panels)     |
+| `constants.py`     | All shared constants, colours, room configs, FIGHTERS    |
 
-**Game states:** `MENU` → `PLAYING` ↔ `PAUSED` → `NAME_ENTRY` → `SCORES`
+**Game states:** `MENU` → `CHAR_SELECT` → `PLAYING` ↔ `PAUSED` → `NAME_ENTRY` → `SCORES`
 
-**Boss interface** — both Salomon and Boss share: `alive`, `hp`, `MAX_HP`, `lag_hp`,
+**Boss interface** — Bambie, Salomon, and Boss all share: `alive`, `hp`, `MAX_HP`, `lag_hp`,
 `phase2`, `phase2_just_triggered`, `name`, `hp_bar_col`, `rect`, `cx`, `cy`,
 `projectiles`, `update(player, walls)`, `take_damage(n)`, `draw(surf, tick)`,
 `draw_projectiles(surf, tick)`.
+
+**Fighter system** — `FIGHTERS` list in `constants.py` is the single source of truth for all
+per-fighter stats. `Player.__init__(fighter_name)` looks up its stats from there.
+`PlayerArrow` and `Bomb` accept a `damage` parameter at construction time so per-fighter
+ranged damage flows through without touching the projectile classes.
 
 **Rules:**
 - Always keep code modular — separate files per domain
@@ -126,21 +144,26 @@ release on itch.io.
 
 ## Placeholder Art Colour Palette
 
-| Element        | Colour (RGB)              |
-|----------------|---------------------------|
-| Player         | (95, 200, 130) green      |
-| Melee enemy    | (210, 75, 75) red         |
-| Ranged enemy   | (200, 155, 40) orange     |
-| Salomon        | (108, 96, 84) stone grey  |
-| Cazarog        | (120, 40, 170) purple     |
-| Health item    | (220, 80, 80) bright red  |
-| Powerup        | (80, 160, 220) blue       |
-| Arrow          | (190, 245, 80) yellow-green|
-| Hazard tile    | (200, 75, 15) lava orange |
-| Floor          | (42, 36, 30) dark brown   |
-| Walls          | (78, 70, 62) brown        |
-| Salomon's room | (46, 41, 35) stone floor  |
-| Cazarog's room | (38, 28, 28) blood floor  |
+| Element          | Colour (RGB)               |
+|------------------|----------------------------|
+| Pistachio player | (95, 200, 130) green       |
+| Cashew player    | (215, 195, 155) beige      |
+| Almond player    | (190, 162, 118) light brown|
+| Melee enemy      | (210, 75, 75) red          |
+| Ranged enemy     | (200, 155, 40) orange      |
+| Bambie           | (130, 55, 190) purple      |
+| Salomon          | (108, 96, 84) stone grey   |
+| Cazarog          | (120, 40, 170) purple      |
+| Health item      | (220, 80, 80) bright red   |
+| Powerup          | (80, 160, 220) blue        |
+| Arrow            | (190, 245, 80) yellow-green|
+| Witch bolt       | (180, 70, 230) purple      |
+| Hazard tile      | (200, 75, 15) lava orange  |
+| Floor            | (42, 36, 30) dark brown    |
+| Walls            | (78, 70, 62) brown         |
+| Bambie's room    | (28, 22, 38) dark purple   |
+| Salomon's room   | (46, 41, 35) stone floor   |
+| Cazarog's room   | (38, 28, 28) blood floor   |
 
 ---
 
@@ -148,15 +171,17 @@ release on itch.io.
 
 ### Done ✅
 - [x] Player movement (8-directional WASD)
-- [x] Melee combat (increased AoE: 36px base, 54px boosted)
-- [x] Arrow and bomb projectiles
+- [x] Melee combat (AoE and damage vary by fighter)
+- [x] Arrow and bomb projectiles (damage varies by fighter)
+- [x] Character select screen — Pistachio, Cashew, Almond
 - [x] 9-room structure with 3 boss rooms
 - [x] Ranged enemies with fireballs
 - [x] Bambie the Witch (miniboss, room 3) — triple bolts + telegraphed beam
 - [x] Salomon the Stone Golem (miniboss, room 6)
 - [x] Cazarog (final boss, room 9, 40 HP) with phase 2
 - [x] Health items and powerups
-- [x] High score leaderboard (top 20)
+- [x] High score leaderboard (top 20) — records fighter used
+- [x] Score formula: max 100,000 (speed 60k + survival 40k)
 - [x] Win screen with score calculation and name entry
 - [x] Pause menu
 - [x] 1280×720 resolution (40×22 tile room)

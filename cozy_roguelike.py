@@ -4,8 +4,8 @@ import json
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
-    SCORES_FILE, MENU, PLAYING, PAUSED, NAME_ENTRY, SCORES,
-    OVERLAY_R, OVERLAY_W, SPEED_COL,
+    SCORES_FILE, MENU, CHAR_SELECT, PLAYING, PAUSED, NAME_ENTRY, SCORES,
+    OVERLAY_R, OVERLAY_W, SPEED_COL, FIGHTERS,
 )
 from dungeon  import (Portal, build_walls, draw_room,
                       spawn_boss_minions, spawn_salomon_minions,
@@ -14,7 +14,8 @@ from dungeon  import (Portal, build_walls, draw_room,
 from enemies  import Salomon, Bambie
 from ui       import (NameEntry, draw_hud, draw_boss_bar, draw_end_panel,
                       draw_room_banner, draw_menu, draw_scores_screen,
-                      draw_name_entry_screen, draw_pause_screen)
+                      draw_name_entry_screen, draw_pause_screen,
+                      draw_char_select)
 
 pygame.init()
 
@@ -36,8 +37,8 @@ def save_scores(scores):
 def is_top20(score, scores):
     return len(scores) < 20 or score > scores[-1]['score']
 
-def insert_score(name, score, scores):
-    entry    = {'name': name[:20] or 'PLAYER', 'score': score}
+def insert_score(name, score, scores, fighter='Pistachio'):
+    entry    = {'name': name[:20] or 'PLAYER', 'score': score, 'fighter': fighter}
     combined = scores + [entry]
     combined.sort(key=lambda x: x['score'], reverse=True)
     combined = combined[:20]
@@ -46,8 +47,8 @@ def insert_score(name, score, scores):
 
 def calculate_score(elapsed_ticks, damage_taken):
     secs           = elapsed_ticks / FPS
-    speed_bonus    = max(0, 5000 - int(secs * 20))
-    survival_bonus = max(0, 3000 - damage_taken * 500)
+    speed_bonus    = max(0, 60000 - int(secs * 38))   # zeroes out after ~26 min
+    survival_bonus = max(0, 40000 - damage_taken * 800) # zeroes out after 50 dmg
     return speed_bonus + survival_bonus, speed_bonus, survival_bonus
 
 
@@ -64,6 +65,8 @@ def main():
     scores = load_scores()
     state  = MENU
     menu_sel = 0
+    char_sel = 0
+    selected_fighter = 'Pistachio'
 
     walls = player = enemies = items = boss = None
     game_over = won = False
@@ -88,7 +91,7 @@ def main():
         nonlocal game_over, won, elapsed, room_num, portal
         nonlocal final_score, speed_bonus, survival_bonus, session_best
         nonlocal banner_timer, banner_text
-        walls, player, enemies, items, boss = new_game()
+        walls, player, enemies, items, boss = new_game(selected_fighter)
         player_arrows = []
         player_bombs  = []
         game_over = won = False
@@ -116,14 +119,25 @@ def main():
                         menu_sel = (menu_sel + 1) % 3
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         if menu_sel == 0:
-                            _reset()
-                            state = PLAYING
+                            state = CHAR_SELECT
                         elif menu_sel == 1:
                             highlight_idx = -1
                             state = SCORES
                         else:
                             pygame.quit()
                             sys.exit()
+
+                elif state == CHAR_SELECT:
+                    if event.key in (pygame.K_LEFT, pygame.K_a):
+                        char_sel = (char_sel - 1) % len(FIGHTERS)
+                    elif event.key in (pygame.K_RIGHT, pygame.K_d):
+                        char_sel = (char_sel + 1) % len(FIGHTERS)
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+                        selected_fighter = FIGHTERS[char_sel]['name']
+                        _reset()
+                        state = PLAYING
+                    elif event.key == pygame.K_ESCAPE:
+                        state = MENU
 
                 elif state == PLAYING:
                     if not game_over and not won:
@@ -170,7 +184,8 @@ def main():
                     if event.key == pygame.K_ESCAPE:
                         state = MENU
                     elif ne.handle(event):
-                        scores, highlight_idx = insert_score(ne.name, ne.score, scores)
+                        scores, highlight_idx = insert_score(
+                            ne.name, ne.score, scores, player.fighter)
                         save_scores(scores)
                         state = SCORES
 
@@ -201,7 +216,7 @@ def main():
             for e in enemies:
                 e.update(player, walls)
                 if player.attack_rect and e.alive and player.attack_rect.colliderect(e.rect):
-                    e.take_damage(1)
+                    e.take_damage(player.melee_dmg)
             enemies = [e for e in enemies if e.alive]
 
             # Player projectiles
@@ -217,7 +232,7 @@ def main():
             if boss and boss.alive:
                 boss.update(player, walls)
                 if player.attack_rect and player.attack_rect.colliderect(boss.rect):
-                    boss.take_damage(1)
+                    boss.take_damage(player.melee_dmg)
                 if boss.phase2_just_triggered:
                     boss.phase2_just_triggered = False
                     if isinstance(boss, Salomon):
@@ -273,6 +288,9 @@ def main():
 
         if state == MENU:
             draw_menu(screen, font, font_big, font_title, menu_sel, scores)
+
+        elif state == CHAR_SELECT:
+            draw_char_select(screen, font, font_big, font_title, FIGHTERS, char_sel)
 
         elif state == PLAYING:
             screen.fill((10, 8, 12))

@@ -72,18 +72,19 @@ class Projectile:
 
 
 class PlayerArrow:
-    """Player's ranged attack — travels in facing direction, deals 2 damage."""
+    """Player's ranged attack — travels in facing direction."""
 
     SPEED  = 7.0
-    DAMAGE = 2
+    DAMAGE = 2   # default; overridden per fighter
 
-    def __init__(self, x, y, vx, vy):
+    def __init__(self, x, y, vx, vy, damage=None):
         self.x        = float(x)
         self.y        = float(y)
         self.vx       = vx
         self.vy       = vy
         self.lifetime = 220
         self.alive    = True
+        self.damage   = damage if damage is not None else self.DAMAGE
 
     @property
     def rect(self):
@@ -100,12 +101,12 @@ class PlayerArrow:
 
         for e in enemies:
             if e.alive and self.rect.colliderect(e.rect):
-                e.take_damage(self.DAMAGE)
+                e.take_damage(self.damage)
                 self.alive = False
                 return
 
         if boss and boss.alive and self.rect.colliderect(boss.rect):
-            boss.take_damage(self.DAMAGE)
+            boss.take_damage(self.damage)
             self.alive = False
 
     def draw(self, surf):
@@ -127,10 +128,10 @@ class Bomb:
     SPEED          = 3.5
     FUSE           = 42
     RADIUS         = 80
-    DAMAGE         = 8
+    DAMAGE         = 8   # default; overridden per fighter
     EXPLODE_FRAMES = 24
 
-    def __init__(self, x, y, vx, vy):
+    def __init__(self, x, y, vx, vy, damage=None):
         self.x         = float(x)
         self.y         = float(y)
         self.vx        = vx
@@ -139,6 +140,7 @@ class Bomb:
         self.alive     = True
         self.exploding = False
         self.exp_frame = 0
+        self.damage    = damage if damage is not None else self.DAMAGE
 
     def update(self, enemies, boss):
         if self.exploding:
@@ -166,9 +168,9 @@ class Bomb:
         self.exp_frame = 0
         for e in enemies:
             if e.alive and _math.hypot(e.cx - self.x, e.cy - self.y) < self.RADIUS:
-                e.take_damage(self.DAMAGE)
+                e.take_damage(self.damage)
         if boss and boss.alive and _math.hypot(boss.cx - self.x, boss.cy - self.y) < self.RADIUS:
-            boss.take_damage(self.DAMAGE)
+            boss.take_damage(self.damage)
 
     def draw(self, surf, tick):
         if self.exploding:

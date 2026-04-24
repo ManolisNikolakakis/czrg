@@ -11,6 +11,7 @@ from constants import (
     SPEED_COL, ATTACK_BCOL, INVULN_COL,
     PLAYER_ARROW_C, BOMB_COL, PORTAL_GLOW,
     BOSS_NAME_C, PANEL_COL,
+    FIGHTERS,
 )
 
 
@@ -251,6 +252,95 @@ def draw_pause_screen(surf, font, font_big, sel):
     surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
 
 
+# ── Character select screen ───────────────────────────────────────────────────
+
+def draw_char_select(surf, font, font_big, font_title, fighters, sel):
+    draw_bg(surf)
+    cx = SCREEN_W // 2
+
+    t = font_title.render("CHOOSE YOUR FIGHTER", True, UI_WHITE)
+    surf.blit(t, (cx - t.get_width() // 2, 22))
+
+    CARD_W, CARD_H = 300, 430
+    gap = (SCREEN_W - 3 * CARD_W) // 4
+
+    # Max values for normalising stat bars
+    max_hp    = max(f['hp']             for f in fighters)
+    max_melee = max(f['atk_size_base']  for f in fighters)
+    max_arrow = max(f['arrow_dmg']      for f in fighters)
+    max_bomb  = max(f['bomb_dmg']       for f in fighters)
+    max_mdmg  = max(f['melee_dmg']      for f in fighters)
+
+    for i, f in enumerate(fighters):
+        cx_card = gap + i * (CARD_W + gap)
+        cy_card = 85
+        active  = i == sel
+
+        # Card background
+        bg = pygame.Surface((CARD_W, CARD_H), pygame.SRCALPHA)
+        bg.fill((50, 42, 35, 235) if active else (28, 24, 20, 215))
+        surf.blit(bg, (cx_card, cy_card))
+        border = GOLD_COL if active else (55, 48, 40)
+        pygame.draw.rect(surf, border, (cx_card, cy_card, CARD_W, CARD_H),
+                         3 if active else 1)
+
+        card_cx = cx_card + CARD_W // 2
+
+        # ── Fighter sprite preview ─────────────────────────────────────────────
+        ICON = 64
+        ix   = card_cx - ICON // 2
+        iy   = cy_card + 18
+        pygame.draw.rect(surf, f['color'], (ix, iy, ICON, ICON))
+        pygame.draw.rect(surf, UI_WHITE if active else UI_MUTED, (ix, iy, ICON, ICON), 2)
+        # Eyes facing right (matching the in-game direction dot convention)
+        ecx, ecy = ix + ICON // 2, iy + ICON // 2
+        pygame.draw.circle(surf, (30, 30, 30), (ecx + 16, ecy), 5)
+        pygame.draw.circle(surf, (240, 240, 240), (ecx + 16, ecy), 2)
+
+        # ── Name ──────────────────────────────────────────────────────────────
+        nt = font_big.render(f['name'], True, GOLD_COL if active else UI_WHITE)
+        surf.blit(nt, (card_cx - nt.get_width() // 2, iy + ICON + 10))
+
+        # ── Traits ────────────────────────────────────────────────────────────
+        ty = iy + ICON + 46
+        for trait in f['traits']:
+            tt = font.render(trait, True, SPEED_COL if active else UI_MUTED)
+            surf.blit(tt, (card_cx - tt.get_width() // 2, ty))
+            ty += 17
+
+        # ── Stat bars ─────────────────────────────────────────────────────────
+        ty += 14
+        bar_w  = CARD_W - 44
+        bar_x0 = cx_card + 22
+
+        stats = [
+            ('HP',          f['hp'],            max_hp,    HP_FG),
+            ('Melee DMG',   f['melee_dmg'],     max_mdmg,  ATTACK_BCOL),
+            ('Melee Range', f['atk_size_base'], max_melee, ATTACK_BCOL),
+            ('Arrow DMG',   f['arrow_dmg'],     max_arrow, PLAYER_ARROW_C),
+            ('Bomb DMG',    f['bomb_dmg'],      max_bomb,  BOMB_COL),
+        ]
+        for label, val, mx, col in stats:
+            lt = font.render(label, True, UI_MUTED)
+            surf.blit(lt, (bar_x0, ty))
+            frac = val / mx if mx else 0
+            pygame.draw.rect(surf, HP_BG, (bar_x0, ty + 14, bar_w, 7))
+            fw = max(0, int(bar_w * frac))
+            if fw:
+                pygame.draw.rect(surf, col, (bar_x0, ty + 14, fw, 7))
+            ty += 28
+
+        # ── Selected indicator ────────────────────────────────────────────────
+        if active:
+            st = font_big.render("> SELECT <", True, GOLD_COL)
+            surf.blit(st, (card_cx - st.get_width() // 2, cy_card + CARD_H - 36))
+
+    hint = font.render(
+        "← →  navigate     ENTER / SPACE  confirm     ESC  back to menu",
+        True, (65, 58, 50))
+    surf.blit(hint, (cx - hint.get_width() // 2, SCREEN_H - 22))
+
+
 # ── Menu screens ──────────────────────────────────────────────────────────────
 
 def draw_menu(surf, font, font_big, font_title, sel, scores):
@@ -303,6 +393,12 @@ def draw_scores_screen(surf, font, font_big, scores, highlight_idx=-1):
                    BRONZE_COL if i == 2             else
                    GOLD_COL   if i == highlight_idx else UI_WHITE)
             surf.blit(font.render(f"{i + 1}.", True, col), (hx, ry))
+            # Fighter colour dot
+            fn   = entry.get('fighter', 'Pistachio')
+            fcol = next((f['color'] for f in FIGHTERS if f['name'] == fn),
+                        (95, 200, 130))
+            pygame.draw.circle(surf, fcol,     (NC - 12, ry + 8), 6)
+            pygame.draw.circle(surf, UI_WHITE, (NC - 12, ry + 8), 6, 1)
             ns = font.render(entry['name'], True, col)
             surf.set_clip(pygame.Rect(NC, ry - 2, SC - NC - 80, 20))
             surf.blit(ns, (NC, ry))

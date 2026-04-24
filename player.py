@@ -3,8 +3,9 @@ import math
 
 from constants import (
     ROOM_X, ROOM_Y, ROOM_COLS, ROOM_ROWS, TILE,
-    PLAYER_COL, HIT_COL, ATTACK_BCOL, ATTACK_COL, SPEED_COL, INVULN_COL,
+    HIT_COL, ATTACK_BCOL, ATTACK_COL, SPEED_COL, INVULN_COL,
     ARROW_RECHARGE, BOMB_RECHARGE, INVULN_DURATION,
+    FIGHTERS,
 )
 from projectiles import PlayerArrow, Bomb
 
@@ -21,12 +22,21 @@ class Player:
     MAX_ARROWS  = 3
     MAX_BOMBS   = 1
 
-    def __init__(self):
+    def __init__(self, fighter_name='Pistachio'):
+        f = next(x for x in FIGHTERS if x['name'] == fighter_name)
+        self.fighter        = f['name']
+        self.col            = f['color']
+        self.max_hp         = f['hp']
+        self.melee_dmg      = f['melee_dmg']
+        self.atk_size_base  = f['atk_size_base']
+        self.atk_size_boost = f['atk_size_boost']
+        self.arrow_dmg      = f['arrow_dmg']
+        self.bomb_dmg       = f['bomb_dmg']
+
         self.x = 0.0
         self.y = 0.0
         self.facing       = (1.0, 0.0)
-        self.hp           = 10
-        self.max_hp       = 10
+        self.hp           = self.max_hp
         self.cooldown     = 0
         self.atk_timer    = 0
         self.iframes      = 0
@@ -63,7 +73,7 @@ class Player:
 
     @property
     def atk_size(self):
-        return 54 if self.attack_timer else 36
+        return self.atk_size_boost if self.attack_timer else self.atk_size_base
 
     @property
     def eff_cd(self):
@@ -95,7 +105,9 @@ class Player:
             if self.arrow_timer == 0:
                 self.arrow_timer = ARROW_RECHARGE
             fx, fy = self.facing
-            return PlayerArrow(self.cx, self.cy, fx * PlayerArrow.SPEED, fy * PlayerArrow.SPEED)
+            return PlayerArrow(self.cx, self.cy,
+                               fx * PlayerArrow.SPEED, fy * PlayerArrow.SPEED,
+                               damage=self.arrow_dmg)
         return None
 
     def shoot_bomb(self):
@@ -104,7 +116,9 @@ class Player:
             if self.bomb_timer == 0:
                 self.bomb_timer = BOMB_RECHARGE
             fx, fy = self.facing
-            return Bomb(self.cx, self.cy, fx * Bomb.SPEED, fy * Bomb.SPEED)
+            return Bomb(self.cx, self.cy,
+                        fx * Bomb.SPEED, fy * Bomb.SPEED,
+                        damage=self.bomb_dmg)
         return None
 
     def take_damage(self, amount):
@@ -170,7 +184,7 @@ class Player:
             pygame.draw.rect(surf, SPEED_COL,   self.rect.inflate(4, 4), 2)
 
         flash = self.iframes and (self.iframes // 4) % 2 == 0
-        pygame.draw.rect(surf, HIT_COL if flash else PLAYER_COL, self.rect)
+        pygame.draw.rect(surf, HIT_COL if flash else self.col, self.rect)
 
         fx, fy = self.facing
         ln = math.hypot(fx, fy)

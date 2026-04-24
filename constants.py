@@ -65,11 +65,49 @@ BOSS_NAME_C    = (210, 185, 165)
 PANEL_COL      = (18,  14,  20, 215)
 
 # ── Game states ───────────────────────────────────────────────────────────────
-MENU       = 'menu'
-PLAYING    = 'playing'
-PAUSED     = 'paused'
-NAME_ENTRY = 'name_entry'
-SCORES     = 'scores'
+MENU        = 'menu'
+CHAR_SELECT = 'char_select'
+PLAYING     = 'playing'
+PAUSED      = 'paused'
+NAME_ENTRY  = 'name_entry'
+SCORES      = 'scores'
+
+# ── Fighter definitions ───────────────────────────────────────────────────────
+FIGHTERS = [
+    {
+        'name':           'Pistachio',
+        'color':          (95, 200, 130),
+        'hp':             10,
+        'melee_dmg':      1,
+        'atk_size_base':  36,
+        'atk_size_boost': 54,
+        'arrow_dmg':      2,
+        'bomb_dmg':       8,
+        'traits': ['Balanced all-rounder', 'No strengths or weaknesses'],
+    },
+    {
+        'name':           'Cashew',
+        'color':          (215, 195, 155),
+        'hp':             14,
+        'melee_dmg':      2,
+        'atk_size_base':  46,
+        'atk_size_boost': 66,
+        'arrow_dmg':      1,
+        'bomb_dmg':       5,
+        'traits': ['High HP & melee power', 'Reduced arrow & bomb damage'],
+    },
+    {
+        'name':           'Almond',
+        'color':          (190, 162, 118),
+        'hp':             8,
+        'melee_dmg':      1,
+        'atk_size_base':  26,
+        'atk_size_boost': 40,
+        'arrow_dmg':      3,
+        'bomb_dmg':       13,
+        'traits': ['High arrow & bomb damage', 'Lower HP & melee power'],
+    },
+]
 
 # ── Per-room enemy config: {room_num: (count, hp, speed)} ────────────────────
 # Rooms 3 (Bambie), 6 (Salomon), 9 (Cazarog) are boss rooms — not in this table.
