@@ -32,18 +32,19 @@ release on itch.io.
 
 **Selectable fighters** (chosen at character select before each run):
 
-| Fighter   | Colour              | HP | Melee DMG | Melee Range | Arrow DMG | Bomb DMG |
-|-----------|---------------------|----|-----------|-------------|-----------|----------|
-| Pistachio | (95, 200, 130) green | 10 | 1         | 36 / 54 px  | 2         | 8        |
-| Cashew    | (215, 195, 155) beige| 14 | 2         | 46 / 66 px  | 1         | 5        |
-| Almond    | (190, 162, 118) brown| 8  | 1         | 26 / 40 px  | 3         | 13       |
+| Fighter   | Colour                   | HP  | Melee DMG | Melee Range | Arrow DMG | Arrows | Bomb DMG |
+|-----------|--------------------------|-----|-----------|-------------|-----------|--------|----------|
+| Pistachio | (95, 200, 130) green     | 10  | 1         | 36 / 54 px  | 2         | 3      | 8        |
+| Cashew    | (215, 195, 155) beige    | 14  | 2         | 46 / 66 px  | 1         | 3      | 5        |
+| Almond    | (190, 162, 118) brown    | 8   | 1         | 26 / 40 px  | 3         | 3      | 13       |
+| NUT       | (172, 130, 58) dark gold | 100 | 10        | 36 / 54 px  | 10        | 10     | 2        |
 
-(Melee range: base / with Attack powerup)
+(Melee range: base / with Attack powerup. NUT's `max_arrows` is stored in FIGHTERS and read per-instance in `Player.__init__`.)
 
 **Player abilities:**
 - 8-directional WASD movement
 - SPACE — melee attack (AoE size varies by fighter, boosted further by Attack powerup)
-- E — shoot arrow (up to 3, recharge over time; damage varies by fighter)
+- E — shoot arrow (up to 3 normally, 10 for NUT; recharge over time; damage varies by fighter)
 - Q — throw bomb (AoE, 1 charge, slow recharge; damage varies by fighter)
 
 **Enemy types:**
@@ -51,15 +52,17 @@ release on itch.io.
 - Ranged enemy — keeps distance, fires fireballs
 - Bambie (miniboss, room 3) — see below
 - Salomon (miniboss, room 6) — see below
-- Cazarog (final boss, room 9) — fires fireballs and homing missiles; enrages at 50% HP spawning 4 minions
+- Cazarog (final boss, room 9) — pre-fight **Rap Battle** (`minigame_rap.py`): 3 lines at 7s each; shows "CAZAROG CHALLENGES YOU IN A RAP BATTLE!" intro; type the response line correctly → −2 HP Cazarog, wrong/timeout → −1 HP player; damage carries into the boss fight. Boss fires fireballs and homing missiles; enrages at 50% HP spawning 4 minions
 
 **Bambie the Witch (room 3):**
+- Pre-fight: **Dance Battle** (`minigame_dance.py`) — 3 WASD sequence rounds; shows "BAMBIE CHALLENGES YOU!" intro; correct → −2 HP Bambie, wrong → −2 HP player
 - Fast movement, prefers to keep distance and strafe
 - Triple bolt attack: fires 3 witch bolts in a spread (−18°, 0°, +18°) toward the player
 - Beam attack: freezes in place, telegraphs direction for 1.5s (glowing purple line), then fires a full-room beam dealing 2 damage — interval shortens in phase 2
 - Phase 2 (50% HP): faster movement, shorter attack cooldowns, spawns 2 ranged minions
 
 **Salomon the Stone Golem (room 6):**
+- Pre-fight: **Trivia Battle** (`minigame_trivia.py`) — 3 questions; shows "SALOMON CHALLENGES YOU IN A TRIVIA BATTLE!" intro; correct → −2 HP Salomon, wrong → −1 HP player
 - Slow, heavy movement
 - Earthquake ability: every ~4.7s spawns 9 cracked floor tiles (orange glow) that deal 1 damage on contact; tiles last ~3.3s
 - Proximity slam: if the player stays within 88px for 3 continuous seconds, Salomon fires an expanding AoE ring (130px radius, 2 damage); a red warning ring grows as the timer builds; 6s cooldown after each slam
@@ -72,7 +75,7 @@ release on itch.io.
 - Invuln — brief invincibility
 
 **Game systems:**
-- Character select screen before each run (Pistachio / Cashew / Almond)
+- Character select screen before each run (Pistachio / Cashew / Almond / NUT)
 - High score leaderboard (top 20, saved to highscores.json); each entry records the fighter used, shown as a colour dot in the scores table
 - Score = speed bonus + survival bonus; max 100,000 (speed 60k + survival 40k)
   - Speed bonus: 60,000 − 38 × seconds (zeroes at ~26 min)
@@ -124,6 +127,8 @@ release on itch.io.
 per-fighter stats. `Player.__init__(fighter_name)` looks up its stats from there.
 `PlayerArrow` and `Bomb` accept a `damage` parameter at construction time so per-fighter
 ranged damage flows through without touching the projectile classes.
+`MAX_ARROWS` is set per-instance in `Player.__init__` via `f.get('max_arrows', 3)` — only
+fighters that need a non-default arrow count (e.g. NUT = 10) need the key in FIGHTERS.
 
 **Rules:**
 - Always keep code modular — separate files per domain
@@ -149,6 +154,7 @@ ranged damage flows through without touching the projectile classes.
 | Pistachio player | (95, 200, 130) green       |
 | Cashew player    | (215, 195, 155) beige      |
 | Almond player    | (190, 162, 118) light brown|
+| NUT player       | (172, 130, 58) dark gold   |
 | Melee enemy      | (210, 75, 75) red          |
 | Ranged enemy     | (200, 155, 40) orange      |
 | Bambie           | (130, 55, 190) purple      |
@@ -173,7 +179,7 @@ ranged damage flows through without touching the projectile classes.
 - [x] Player movement (8-directional WASD)
 - [x] Melee combat (AoE and damage vary by fighter)
 - [x] Arrow and bomb projectiles (damage varies by fighter)
-- [x] Character select screen — Pistachio, Cashew, Almond
+- [x] Character select screen — Pistachio, Cashew, Almond, NUT
 - [x] 9-room structure with 3 boss rooms
 - [x] Ranged enemies with fireballs
 - [x] Bambie the Witch (miniboss, room 3) — triple bolts + telegraphed beam

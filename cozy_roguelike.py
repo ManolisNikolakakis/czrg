@@ -4,9 +4,14 @@ import json
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
-    SCORES_FILE, MENU, CHAR_SELECT, PLAYING, PAUSED, NAME_ENTRY, SCORES,
+    SCORES_FILE, MENU, CHAR_SELECT, PLAYING, TRIVIA, PAUSED, NAME_ENTRY, SCORES,
     OVERLAY_R, OVERLAY_W, SPEED_COL, FIGHTERS,
 )
+from minigame_trivia import TriviaMinigame
+from minigame_dance  import run_dance_battle
+from minigame_rap    import (run_rap_battle,
+                              PLAYER_START_HP as RAP_PLAYER_HP,
+                              CAZAROG_START_HP as RAP_CAZ_HP)
 from dungeon  import (Portal, build_walls, draw_room,
                       spawn_boss_minions, spawn_salomon_minions,
                       spawn_bambie_minions,
@@ -84,6 +89,7 @@ def main():
     highlight_idx = -1
     tick          = 0
     pause_sel     = 0
+    trivia        = None
 
     def _reset():
         nonlocal walls, player, enemies, items, boss
@@ -138,6 +144,21 @@ def main():
                         state = PLAYING
                     elif event.key == pygame.K_ESCAPE:
                         state = MENU
+
+                elif state == TRIVIA:
+                    trivia.handle_key(event.key)
+                    if trivia._done_ready:
+                        player.hp = trivia.player_hp
+                        if trivia.result == 'win':
+                            state = PLAYING
+                            banner_text  = "SALOMON AWAITS…"
+                            banner_timer = 100
+                        else:
+                            player.hp = 0
+                            game_over  = True
+                            final_score, speed_bonus, survival_bonus = calculate_score(
+                                elapsed, player.total_damage)
+                            state = PLAYING
 
                 elif state == PLAYING:
                     if not game_over and not won:
@@ -260,20 +281,46 @@ def main():
 
             # Portal entry
             if portal and player.rect.inflate(4, 4).colliderect(portal.rect):
-                room_num    += 1
-                enemies, boss = setup_room(room_num)
-                items         = spawn_items()
-                portal        = None
+                room_num      += 1
+                enemies, boss  = setup_room(room_num)
+                items          = spawn_items()
+                portal         = None
                 player.place_at_center()
-                if room_num == TOTAL_ROOMS:
-                    banner_text = "CAZAROG AWAITS…"
-                elif room_num == 6:
-                    banner_text = "SALOMON AWAITS…"
+                if room_num == 6:
+                    # Trivia duel before Salomon fight
+                    trivia       = TriviaMinigame(player)
+                    state        = TRIVIA
+                    banner_timer = 0
                 elif room_num == 3:
-                    banner_text = "BAMBIE AWAITS…"
+                    # Dance battle before Bambie fight (blocking inner loop)
+                    survived = run_dance_battle(
+                        screen, clock, font, font_big, font_title, player, boss)
+                    if not survived:
+                        game_over = True
+                        final_score, speed_bonus, survival_bonus = calculate_score(
+                            elapsed, player.total_damage)
+                    else:
+                        banner_text  = "BAMBIE AWAITS…"
+                        banner_timer = 100
+                elif room_num == TOTAL_ROOMS:
+                    # Rap battle before Cazarog fight
+                    result = run_rap_battle(screen, clock, player.fighter)
+                    rap_player_dmg = RAP_PLAYER_HP - result["player_hp"]
+                    rap_caz_dmg    = RAP_CAZ_HP    - result["cazarog_hp"]
+                    player.hp          -= rap_player_dmg
+                    player.total_damage += rap_player_dmg
+                    if boss:
+                        boss.take_damage(rap_caz_dmg)
+                    if player.hp <= 0:
+                        game_over = True
+                        final_score, speed_bonus, survival_bonus = calculate_score(
+                            elapsed, player.total_damage)
+                    else:
+                        banner_text  = "CAZAROG AWAITS…"
+                        banner_timer = 100
                 else:
-                    banner_text = f"Room {room_num} / {TOTAL_ROOMS}"
-                banner_timer = 100
+                    banner_text  = f"Room {room_num} / {TOTAL_ROOMS}"
+                    banner_timer = 100
 
             if player.hp <= 0:
                 game_over = True
@@ -283,6 +330,10 @@ def main():
             elapsed      += 1
             banner_timer  = max(0, banner_timer - 1)
 
+        # ── Trivia update ─────────────────────────────────────────────────────
+        if state == TRIVIA and trivia:
+            trivia.update()
+
         # ── Draw ──────────────────────────────────────────────────────────────
         tick += 1
 
@@ -291,6 +342,10 @@ def main():
 
         elif state == CHAR_SELECT:
             draw_char_select(screen, font, font_big, font_title, FIGHTERS, char_sel)
+
+        elif state == TRIVIA:
+            if trivia:
+                trivia.draw(screen, font, font_big, font_title, tick)
 
         elif state == PLAYING:
             screen.fill((10, 8, 12))

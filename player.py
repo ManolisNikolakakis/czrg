@@ -32,6 +32,7 @@ class Player:
         self.atk_size_boost = f['atk_size_boost']
         self.arrow_dmg      = f['arrow_dmg']
         self.bomb_dmg       = f['bomb_dmg']
+        self.MAX_ARROWS     = f.get('max_arrows', Player.MAX_ARROWS)
 
         self.x = 0.0
         self.y = 0.0
@@ -49,6 +50,7 @@ class Player:
         self.arrow_timer  = 0
         self.bombs        = self.MAX_BOMBS
         self.bomb_timer   = 0
+        self.draw_tick    = 0
         self.place_at_center()
 
     def place_at_center(self):
@@ -160,6 +162,8 @@ class Player:
             if self.bomb_timer == 0:
                 self.bombs += 1
 
+        self.draw_tick += 1
+
         if self.atk_timer:
             self.atk_timer -= 1
             half = self.atk_size // 2
@@ -182,6 +186,15 @@ class Player:
             pygame.draw.rect(surf, ATTACK_BCOL, self.rect.inflate(8, 8), 2)
         if self.speed_timer:
             pygame.draw.rect(surf, SPEED_COL,   self.rect.inflate(4, 4), 2)
+
+        if self.fighter == 'NUT':
+            for i in range(4):
+                t = self.draw_tick * 0.09 + i * 0.65
+                r = int(127 + 127 * math.sin(t))
+                g = int(127 + 127 * math.sin(t + 2.094))
+                b = int(127 + 127 * math.sin(t + 4.189))
+                pygame.draw.rect(surf, (r, g, b),
+                                 self.rect.inflate(14 - i * 3, 14 - i * 3), 2)
 
         flash = self.iframes and (self.iframes // 4) % 2 == 0
         pygame.draw.rect(surf, HIT_COL if flash else self.col, self.rect)

@@ -68,6 +68,7 @@ PANEL_COL      = (18,  14,  20, 215)
 MENU        = 'menu'
 CHAR_SELECT = 'char_select'
 PLAYING     = 'playing'
+TRIVIA      = 'trivia'
 PAUSED      = 'paused'
 NAME_ENTRY  = 'name_entry'
 SCORES      = 'scores'
@@ -106,6 +107,18 @@ FIGHTERS = [
         'arrow_dmg':      3,
         'bomb_dmg':       13,
         'traits': ['High arrow & bomb damage', 'Lower HP & melee power'],
+    },
+    {
+        'name':           'NUT',
+        'color':          (172, 130, 58),
+        'hp':             100,
+        'melee_dmg':      10,
+        'atk_size_base':  36,
+        'atk_size_boost': 54,
+        'arrow_dmg':      10,
+        'bomb_dmg':       2,
+        'max_arrows':     10,
+        'traits': ['10 damage per melee hit', '10 arrows, 10 dmg each'],
     },
 ]
 
