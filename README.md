@@ -1,10 +1,10 @@
-# czrg — Cozy Roguelike (Working Title)
+# Cazarog (Working Title)
 
 A top-down action roguelike with a cozy aesthetic, currently in early prototype stage. Built in Python and Pygame.
 
 ## About
 
-czrg is a top-down action roguelike featuring procedurally generated dungeons, real-time combat, and a warm pixel art visual style. The goal is a game that feels mechanically deep and replayable — think Hades' satisfying combat loop wrapped in the cozy aesthetic of something like Garden Story.
+Cazarog is a top-down action roguelike featuring procedurally generated dungeons, real-time combat, and a warm pixel art visual style. The goal is a game that feels mechanically deep and replayable — think Hades' satisfying combat loop wrapped in the cozy aesthetic of something like Garden Story.
 
 Current prototype features:
 - Top-down 8-directional movement and combat
