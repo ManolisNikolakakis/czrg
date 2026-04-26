@@ -382,16 +382,15 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
             surf.blit(prog, (W - prog.get_width() - 20, H - 30))
 
         elif state == "RESULT":
-            won = cazarog_hp <= 0 or (cazarog_hp < player_hp)
-            if player_hp <= 0 and cazarog_hp > 0:
-                won = False
-
-            title_col = NEON_GREEN if won else NEON_PINK
-            title_txt = "YOU BODIED IT!" if won else "CAZAROG WINS THE BATTLE"
-            draw_text_centered(surf, title_txt, font_huge, title_col, W // 2, 180, BLACK)
-
             p_dmg = CAZAROG_START_HP - cazarog_hp
             c_dmg = PLAYER_START_HP  - player_hp
+            won   = p_dmg > c_dmg and player_hp > 0
+
+            title_col = NEON_GREEN if won else NEON_PINK
+            title_txt = ("Cazarog respects your mad bars."
+                         if won else "Cazarog looks at you condescendingly.")
+            draw_text_centered(surf, title_txt, font_big, title_col, W // 2, 190, BLACK)
+
             draw_text_centered(surf, f"Damage dealt to Cazarog: {p_dmg}", font_big, NEON_YELLOW, W // 2, 280, BLACK)
             draw_text_centered(surf, f"Damage taken: {c_dmg}", font_big, NEON_ORANGE, W // 2, 330, BLACK)
             draw_text_centered(surf, "These carry into the boss fight!", font_med, NEON_CYAN, W // 2, 395)
@@ -403,7 +402,9 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
         screen.blit(surf, (ox, oy))
         pygame.display.flip()
 
-    won = cazarog_hp < player_hp or cazarog_hp == 0
+    p_dmg = CAZAROG_START_HP - cazarog_hp
+    c_dmg = PLAYER_START_HP  - player_hp
+    won   = p_dmg > c_dmg and player_hp > 0
     return {
         "player_hp":   player_hp,
         "cazarog_hp":  cazarog_hp,

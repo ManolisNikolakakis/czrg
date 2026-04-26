@@ -611,9 +611,9 @@ class TriviaMinigame:
         surf.blit(overlay, (0, 0))
 
         if self.result == 'win':
-            msg, sub, col = "SALOMON YIELDS!", "The battle begins…", CORRECT_COL
+            msg, sub, col = "SALOMON YIELDS!", "Salomon thinks your IQ is over 9000.", CORRECT_COL
         else:
-            msg, sub, col = "SALOMON PREVAILS!", "You have been defeated…", WRONG_COL
+            msg, sub, col = "SALOMON PREVAILS!", "Salomon wonders if you've completed preschool.", WRONG_COL
 
         t1 = font_title.render(msg, True, col)
         t2 = font_big.render(sub, True, UI_WHITE)

@@ -416,7 +416,10 @@ def run_dance_battle(screen, clock, font, font_big, font_title, player, bambie):
                 if round_idx < 2:
                     hint = f'Round {round_idx + 2} incoming…'
                 elif round_idx == 2:
-                    hint = 'Prepare for the boss fight!' if result_won else 'Dance battle over…'
+                    if player.hp > 0:
+                        hint = 'Bambie is mesmerized by your moves.'
+                    else:
+                        hint = "Bambie wonders what's a hot square if it can't really dance."
                 else:
                     hint = ''
                 t = font.render(hint, True, (138, 105, 168))

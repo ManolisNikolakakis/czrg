@@ -1,9 +1,4 @@
-# CLAUDE.md — Cozy Roguelike (czrg)
-
-This file is read automatically by Claude Code at the start of every session.
-Always refer to this document before making any changes to the codebase.
-
----
+# CLAUDE.md — Cazarog
 
 ## Project Overview
 
@@ -35,9 +30,9 @@ release on itch.io.
 | Fighter   | Colour                   | HP  | Melee DMG | Melee Range | Arrow DMG | Arrows | Bomb DMG |
 |-----------|--------------------------|-----|-----------|-------------|-----------|--------|----------|
 | Pistachio | (95, 200, 130) green     | 10  | 1         | 36 / 54 px  | 2         | 3      | 8        |
-| Cashew    | (215, 195, 155) beige    | 14  | 2         | 46 / 66 px  | 1         | 3      | 5        |
-| Almond    | (190, 162, 118) brown    | 8   | 1         | 26 / 40 px  | 3         | 3      | 13       |
-| NUT       | (172, 130, 58) dark gold | 100 | 10        | 36 / 54 px  | 10        | 10     | 2        |
+| Cashew  | (215, 195, 155) beige    | 14  | 2         | 46 / 66 px  | 1         | 3      | 5        |
+| Almond  | (190, 162, 118) brown    | 8   | 1         | 26 / 40 px  | 3         | 3      | 13       |
+| NUT     | (172, 130, 58) dark gold | 100 | 10        | 36 / 54 px  | 10        | 10     | 2        |
 
 (Melee range: base / with Attack powerup. NUT's `max_arrows` is stored in FIGHTERS and read per-instance in `Player.__init__`.)
 
@@ -75,6 +70,7 @@ release on itch.io.
 - Invuln — brief invincibility
 
 **Game systems:**
+- **Hub room** (`hub.py`): player controls Cazarog (WASD) in a shared room with 6 wandering NPCs (Bambie, Salomon, Pistachio, Cashew, Almond, NUT); walking into the portal triggers character select; shown after every run (win or lose) but NOT on first boot — first run goes MENU → CHAR_SELECT directly
 - Character select screen before each run (Pistachio / Cashew / Almond / NUT)
 - High score leaderboard (top 20, saved to highscores.json); each entry records the fighter used, shown as a colour dot in the scores table
 - Score = speed bonus + survival bonus; max 100,000 (speed 60k + survival 40k)
@@ -108,6 +104,7 @@ release on itch.io.
 | File               | Responsibility                                           |
 |--------------------|----------------------------------------------------------|
 | `cozy_roguelike.py`| Main game loop, state machine, score helpers             |
+| `hub.py`           | Hub room: Cazarog player + 6 wandering NPCs + portal     |
 | `player.py`        | Player class (movement, combat, items, draw); reads fighter stats from FIGHTERS |
 | `enemies.py`       | Enemy, RangedEnemy, Bambie, Salomon, Boss classes        |
 | `dungeon.py`       | Room drawing, wall building, spawning, Portal class      |
@@ -117,6 +114,11 @@ release on itch.io.
 | `constants.py`     | All shared constants, colours, room configs, FIGHTERS    |
 
 **Game states:** `MENU` → `CHAR_SELECT` → `PLAYING` ↔ `PAUSED` → `NAME_ENTRY` → `SCORES`
+
+First run: MENU → CHAR_SELECT → PLAYING (no hub).
+Subsequent runs: win/lose → **HUB** → CHAR_SELECT → PLAYING (hub is the lobby between runs).
+Top-20 win: NAME_ENTRY → SCORES → HUB → CHAR_SELECT.
+Viewing scores from MENU goes back to MENU, never to hub.
 
 **Boss interface** — Bambie, Salomon, and Boss all share: `alive`, `hp`, `MAX_HP`, `lag_hp`,
 `phase2`, `phase2_just_triggered`, `name`, `hp_bar_col`, `rect`, `cx`, `cy`,
@@ -153,6 +155,7 @@ fighters that need a non-default arrow count (e.g. NUT = 10) need the key in FIG
 |------------------|----------------------------|
 | Pistachio player | (95, 200, 130) green       |
 | Cashew player    | (215, 195, 155) beige      |
+| Pistachio player | (95, 200, 130) green       |
 | Almond player    | (190, 162, 118) light brown|
 | NUT player       | (172, 130, 58) dark gold   |
 | Melee enemy      | (210, 75, 75) red          |
@@ -175,11 +178,12 @@ fighters that need a non-default arrow count (e.g. NUT = 10) need the key in FIG
 
 ## Current Feature Roadmap
 
-### Done ✅
+### Done
 - [x] Player movement (8-directional WASD)
 - [x] Melee combat (AoE and damage vary by fighter)
 - [x] Arrow and bomb projectiles (damage varies by fighter)
 - [x] Character select screen — Pistachio, Cashew, Almond, NUT
+- [x] Hub room — player controls Cazarog; Bambie, Salomon, and all fighters wander; portal leads to char select; shown after every run (not on first boot)
 - [x] 9-room structure with 3 boss rooms
 - [x] Ranged enemies with fireballs
 - [x] Bambie the Witch (miniboss, room 3) — triple bolts + telegraphed beam
@@ -192,7 +196,7 @@ fighters that need a non-default arrow count (e.g. NUT = 10) need the key in FIG
 - [x] Pause menu
 - [x] 1280×720 resolution (40×22 tile room)
 
-### Up Next 🔧
+### Up Next
 - [ ] Procedural dungeon generation
 - [ ] More enemy variety
 - [ ] Player character progression between rooms

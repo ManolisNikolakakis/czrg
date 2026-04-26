@@ -12,6 +12,7 @@ from minigame_dance  import run_dance_battle
 from minigame_rap    import (run_rap_battle,
                               PLAYER_START_HP as RAP_PLAYER_HP,
                               CAZAROG_START_HP as RAP_CAZ_HP)
+from hub import run_hub
 from dungeon  import (Portal, build_walls, draw_room,
                       spawn_boss_minions, spawn_salomon_minions,
                       spawn_bambie_minions,
@@ -71,7 +72,8 @@ def main():
     state  = MENU
     menu_sel = 0
     char_sel = 0
-    selected_fighter = 'Pistachio'
+    selected_fighter  = FIGHTERS[0]['name']
+    scores_from_game  = False
 
     walls = player = enemies = items = boss = None
     game_over = won = False
@@ -127,8 +129,9 @@ def main():
                         if menu_sel == 0:
                             state = CHAR_SELECT
                         elif menu_sel == 1:
-                            highlight_idx = -1
-                            state = SCORES
+                            highlight_idx    = -1
+                            scores_from_game = False
+                            state            = SCORES
                         else:
                             pygame.quit()
                             sys.exit()
@@ -178,10 +181,12 @@ def main():
                     else:
                         if event.key == pygame.K_r:
                             if won and is_top20(final_score, scores):
-                                ne    = NameEntry(final_score)
-                                state = NAME_ENTRY
+                                ne               = NameEntry(final_score)
+                                scores_from_game = True
+                                state            = NAME_ENTRY
                             else:
-                                _reset()
+                                run_hub(screen, clock, font, font_big, font_title)
+                                state = CHAR_SELECT
                         elif event.key == pygame.K_ESCAPE:
                             state = MENU
 
@@ -211,10 +216,17 @@ def main():
                         state = SCORES
 
                 elif state == SCORES:
-                    if event.key in (pygame.K_ESCAPE, pygame.K_RETURN,
-                                     pygame.K_KP_ENTER, pygame.K_r):
+                    if event.key == pygame.K_ESCAPE:
                         highlight_idx = -1
                         state = MENU
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_r):
+                        highlight_idx = -1
+                        if scores_from_game:
+                            scores_from_game = False
+                            run_hub(screen, clock, font, font_big, font_title)
+                            state = CHAR_SELECT
+                        else:
+                            state = MENU
 
         # ── Game update ───────────────────────────────────────────────────────
         if state == PLAYING and not game_over and not won:
