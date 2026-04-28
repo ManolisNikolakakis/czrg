@@ -1,15 +1,18 @@
 import pygame
 import sys
 import json
+import random
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
     SCORES_FILE, MENU, CHAR_SELECT, PLAYING, TRIVIA, PAUSED, NAME_ENTRY, SCORES,
     OVERLAY_R, OVERLAY_W, SPEED_COL, FIGHTERS,
 )
-from minigame_trivia import TriviaMinigame
-from minigame_dance  import run_dance_battle
-from minigame_rap    import (run_rap_battle,
+from minigame_trivia   import TriviaMinigame
+from minigame_dance    import run_dance_battle
+from minigame_fishing  import run_fishing_battle
+from minigame_shooting import run_shooting_battle
+from minigame_rap      import (run_rap_battle,
                               PLAYER_START_HP as RAP_PLAYER_HP,
                               CAZAROG_START_HP as RAP_CAZ_HP)
 from hub import run_hub
@@ -93,12 +96,33 @@ def main():
     pause_sel     = 0
     trivia        = None
 
+    # Minigame assignment: picked fresh each run (pre-generated before the hub so
+    # the hub NPCs can hint at what's coming next).
+    bambie_minigame  = 'dance'    # 'dance' | 'fishing' | 'shooting'
+    salomon_minigame = 'trivia'   # 'trivia' | 'fishing' | 'shooting'
+    pending_minigames = None      # (bambie_game, salomon_game) pre-generated for next run
+
+    def _pick_minigames():
+        """Pick one minigame for Bambie and one for Salomon with no shared game."""
+        b_pool = ['dance', 'fishing', 'shooting']
+        b      = random.choice(b_pool)
+        s_pool = ['trivia', 'fishing', 'shooting']
+        if b in s_pool:
+            s_pool = [g for g in s_pool if g != b]
+        return b, random.choice(s_pool)
+
     def _reset():
         nonlocal walls, player, enemies, items, boss
         nonlocal player_arrows, player_bombs
         nonlocal game_over, won, elapsed, room_num, portal
         nonlocal final_score, speed_bonus, survival_bonus, session_best
         nonlocal banner_timer, banner_text
+        nonlocal bambie_minigame, salomon_minigame, pending_minigames
+        if pending_minigames is not None:
+            bambie_minigame, salomon_minigame = pending_minigames
+            pending_minigames = None
+        else:
+            bambie_minigame, salomon_minigame = _pick_minigames()
         walls, player, enemies, items, boss = new_game(selected_fighter)
         player_arrows = []
         player_bombs  = []
@@ -185,7 +209,10 @@ def main():
                                 scores_from_game = True
                                 state            = NAME_ENTRY
                             else:
-                                run_hub(screen, clock, font, font_big, font_title)
+                                pending_minigames = _pick_minigames()
+                                run_hub(screen, clock, font, font_big, font_title,
+                                        next_minigames={'bambie':  pending_minigames[0],
+                                                        'salomon': pending_minigames[1]})
                                 state = CHAR_SELECT
                         elif event.key == pygame.K_ESCAPE:
                             state = MENU
@@ -223,7 +250,10 @@ def main():
                         highlight_idx = -1
                         if scores_from_game:
                             scores_from_game = False
-                            run_hub(screen, clock, font, font_big, font_title)
+                            pending_minigames = _pick_minigames()
+                            run_hub(screen, clock, font, font_big, font_title,
+                                    next_minigames={'bambie':  pending_minigames[0],
+                                                    'salomon': pending_minigames[1]})
                             state = CHAR_SELECT
                         else:
                             state = MENU
@@ -298,15 +328,17 @@ def main():
                 items          = spawn_items()
                 portal         = None
                 player.place_at_center()
-                if room_num == 6:
-                    # Trivia duel before Salomon fight
-                    trivia       = TriviaMinigame(player)
-                    state        = TRIVIA
-                    banner_timer = 0
-                elif room_num == 3:
-                    # Dance battle before Bambie fight (blocking inner loop)
-                    survived = run_dance_battle(
-                        screen, clock, font, font_big, font_title, player, boss)
+                if room_num == 3:
+                    # Pre-fight minigame for Bambie (blocking)
+                    if bambie_minigame == 'dance':
+                        survived = run_dance_battle(
+                            screen, clock, font, font_big, font_title, player, boss)
+                    elif bambie_minigame == 'fishing':
+                        survived = run_fishing_battle(
+                            screen, clock, font, font_big, font_title, player, boss)
+                    else:  # shooting
+                        survived = run_shooting_battle(
+                            screen, clock, font, font_big, font_title, player, boss)
                     if not survived:
                         game_over = True
                         final_score, speed_bonus, survival_bonus = calculate_score(
@@ -314,6 +346,26 @@ def main():
                     else:
                         banner_text  = "BAMBIE AWAITS…"
                         banner_timer = 100
+                elif room_num == 6:
+                    # Pre-fight minigame for Salomon
+                    if salomon_minigame == 'trivia':
+                        trivia       = TriviaMinigame(player)
+                        state        = TRIVIA
+                        banner_timer = 0
+                    else:
+                        if salomon_minigame == 'fishing':
+                            survived = run_fishing_battle(
+                                screen, clock, font, font_big, font_title, player, boss)
+                        else:  # shooting
+                            survived = run_shooting_battle(
+                                screen, clock, font, font_big, font_title, player, boss)
+                        if not survived:
+                            game_over = True
+                            final_score, speed_bonus, survival_bonus = calculate_score(
+                                elapsed, player.total_damage)
+                        else:
+                            banner_text  = "SALOMON AWAITS…"
+                            banner_timer = 100
                 elif room_num == TOTAL_ROOMS:
                     # Rap battle before Cazarog fight
                     result = run_rap_battle(screen, clock, player.fighter)

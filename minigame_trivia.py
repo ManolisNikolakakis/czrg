@@ -19,9 +19,9 @@ SALOMON_OUT  = (158, 142, 125)
 BUBBLE_BG    = (30,  26,  22)
 BUBBLE_EDGE  = (125, 105, 78)
 
-# ── 100-question pool ─────────────────────────────────────────────────────────
+# ── Question pools ────────────────────────────────────────────────────────────
 # Each entry: {'q': str, 'opts': [A, B, C, D], 'answer': int (0-indexed)}
-QUESTION_POOL = [
+VIDEOGAME_POOL = [
     {'q': "What year was Pong first released?",
      'opts': ["1968", "1970", "1972", "1975"], 'answer': 2},
 
@@ -341,6 +341,619 @@ QUESTION_POOL = [
      'opts': ["Vaporeon", "Flareon", "Jolteon", "Espeon"], 'answer': 1},
 ]
 
+SPORTS_POOL = [
+    {'q': "How many players from each team are on a basketball court at one time?",
+     'opts': ["4", "5", "6", "7"], 'answer': 1},
+
+    {'q': "How many players are on each team in a soccer match?",
+     'opts': ["9", "10", "11", "12"], 'answer': 2},
+
+    {'q': "How many innings are in a standard MLB baseball game?",
+     'opts': ["7", "8", "9", "10"], 'answer': 2},
+
+    {'q': "What sport uses a shuttlecock?",
+     'opts': ["Tennis", "Squash", "Badminton", "Pickleball"], 'answer': 2},
+
+    {'q': "How many events make up a decathlon?",
+     'opts': ["8", "9", "10", "12"], 'answer': 2},
+
+    {'q': "Which country hosted the 2016 Summer Olympics?",
+     'opts': ["China", "UK", "Brazil", "Australia"], 'answer': 2},
+
+    {'q': "In tennis, what is the name for a 40-40 score?",
+     'opts': ["Tie", "Deuce", "Draw", "Level"], 'answer': 1},
+
+    {'q': "Who has won the most Olympic gold medals in history?",
+     'opts': ["Usain Bolt", "Carl Lewis", "Michael Phelps", "Mark Spitz"], 'answer': 2},
+
+    {'q': "In American football, how many points is a touchdown worth?",
+     'opts': ["4", "5", "6", "7"], 'answer': 2},
+
+    {'q': "In which sport would you perform a 'slam dunk'?",
+     'opts': ["Volleyball", "Basketball", "Handball", "Water Polo"], 'answer': 1},
+
+    {'q': "How many holes are in a standard round of golf?",
+     'opts': ["9", "12", "18", "21"], 'answer': 2},
+
+    {'q': "In golf, what is completing a hole one stroke under par called?",
+     'opts': ["Eagle", "Birdie", "Albatross", "Bogey"], 'answer': 1},
+
+    {'q': "How long is an Olympic swimming pool in metres?",
+     'opts': ["25", "50", "75", "100"], 'answer': 1},
+
+    {'q': "Which sport is played at Wimbledon?",
+     'opts': ["Squash", "Golf", "Tennis", "Badminton"], 'answer': 2},
+
+    {'q': "In American football, how many points is a field goal worth?",
+     'opts': ["1", "2", "3", "4"], 'answer': 2},
+
+    {'q': "How many players are on a volleyball team on the court?",
+     'opts': ["4", "5", "6", "7"], 'answer': 2},
+
+    {'q': "In boxing, how many rounds are in a world championship fight?",
+     'opts': ["10", "12", "15", "20"], 'answer': 1},
+
+    {'q': "Which country has won the most FIFA World Cup titles?",
+     'opts': ["Germany", "Argentina", "Italy", "Brazil"], 'answer': 3},
+
+    {'q': "How far is a marathon in kilometres (approximate)?",
+     'opts': ["38", "40", "42", "45"], 'answer': 2},
+
+    {'q': "In cricket, how many runs is a 'six' worth?",
+     'opts': ["3", "4", "5", "6"], 'answer': 3},
+
+    {'q': "Which sport uses the term 'love' to mean zero?",
+     'opts': ["Badminton", "Squash", "Tennis", "Table Tennis"], 'answer': 2},
+
+    {'q': "In American football, how many points is a safety worth?",
+     'opts': ["1", "2", "3", "4"], 'answer': 1},
+
+    {'q': "How many players are on a baseball team on the field?",
+     'opts': ["7", "8", "9", "10"], 'answer': 2},
+
+    {'q': "Who invented basketball in 1891?",
+     'opts': ["James Naismith", "Bill Bowerman", "Walter Camp", "Abner Doubleday"], 'answer': 0},
+
+    {'q': "In tennis, what is a serve that lands in and cannot be returned called?",
+     'opts': ["Ace", "Let", "Fault", "Winner"], 'answer': 0},
+
+    {'q': "How many Grand Slam tournaments are there in tennis?",
+     'opts': ["2", "3", "4", "5"], 'answer': 2},
+
+    {'q': "Which Grand Slam tennis tournament is played on clay?",
+     'opts': ["Wimbledon", "US Open", "Australian Open", "French Open"], 'answer': 3},
+
+    {'q': "In rugby union, how many players are on each team?",
+     'opts': ["13", "14", "15", "16"], 'answer': 2},
+
+    {'q': "What is the name of the trophy awarded to the NHL champion?",
+     'opts': ["The Cup", "Stanley Cup", "The Gretzky Cup", "The Maple Cup"], 'answer': 1},
+
+    {'q': "In the Tour de France, what does the yellow jersey represent?",
+     'opts': ["Best climber", "Overall leader", "Best sprinter", "Most aggressive rider"], 'answer': 1},
+
+    {'q': "In Formula 1, how many points does the race winner receive?",
+     'opts': ["20", "25", "30", "50"], 'answer': 1},
+
+    {'q': "How many gold medals did Usain Bolt win at the Olympics in total?",
+     'opts': ["6", "7", "8", "9"], 'answer': 2},
+
+    {'q': "Which country has won the most Olympic gold medals of all time?",
+     'opts': ["Russia", "China", "Germany", "United States"], 'answer': 3},
+
+    {'q': "What is the standard height of a basketball hoop in feet?",
+     'opts': ["8", "9", "10", "11"], 'answer': 2},
+
+    {'q': "In which year did women's boxing debut at the Olympic Games?",
+     'opts': ["2004", "2008", "2012", "2016"], 'answer': 2},
+
+    {'q': "What is a 'love game' in tennis?",
+     'opts': ["A tie", "A game won without opponent scoring", "An advantage game", "A penalty game"], 'answer': 1},
+
+    {'q': "How many points is a red ball worth in snooker?",
+     'opts': ["1", "2", "3", "4"], 'answer': 0},
+
+    {'q': "In soccer, what colour card results in a player being sent off?",
+     'opts': ["Yellow", "Red", "Orange", "Black"], 'answer': 1},
+
+    {'q': "Who holds the record for most career home runs in MLB?",
+     'opts': ["Babe Ruth", "Hank Aaron", "Barry Bonds", "Willie Mays"], 'answer': 2},
+
+    {'q': "In which country did the sport of sumo wrestling originate?",
+     'opts': ["China", "Korea", "Japan", "Mongolia"], 'answer': 2},
+
+    {'q': "In Formula 1, what does DRS stand for?",
+     'opts': ["Drag Reduction System", "Direct Racing Speed", "Driver Reaction System", "Dynamic Rear Spoiler"], 'answer': 0},
+
+    {'q': "How many minutes are in a standard soccer match?",
+     'opts': ["80", "85", "90", "95"], 'answer': 2},
+
+    {'q': "In golf, what is completing a hole two strokes under par called?",
+     'opts': ["Birdie", "Eagle", "Albatross", "Hole-in-one"], 'answer': 1},
+
+    {'q': "Which Grand Slam tennis tournament is played on grass?",
+     'opts': ["US Open", "Australian Open", "French Open", "Wimbledon"], 'answer': 3},
+
+    {'q': "How many players are on a water polo team in the pool?",
+     'opts': ["5", "6", "7", "8"], 'answer': 2},
+
+    {'q': "In American football, what separates the two teams at the start of each play?",
+     'opts': ["Goal line", "Line of scrimmage", "First down line", "Red zone"], 'answer': 1},
+
+    {'q': "Who has won the men's singles at Wimbledon the most times?",
+     'opts': ["Pete Sampras", "Roger Federer", "Novak Djokovic", "Rafael Nadal"], 'answer': 1},
+
+    {'q': "In ice hockey, how many players (including goalie) does each team have in normal play?",
+     'opts': ["4", "5", "6", "7"], 'answer': 2},
+
+    {'q': "What is the highest possible score in a game of ten-pin bowling?",
+     'opts': ["240", "270", "300", "330"], 'answer': 2},
+
+    {'q': "Which country has won the Rugby Union World Cup the most times?",
+     'opts': ["England", "Australia", "South Africa", "New Zealand"], 'answer': 3},
+
+    {'q': "In the Tour de France, what does the polka-dot jersey represent?",
+     'opts': ["Overall leader", "Best sprinter", "Best young rider", "Best climber"], 'answer': 3},
+
+    {'q': "How long is a standard NBA basketball game in minutes?",
+     'opts': ["40", "48", "50", "60"], 'answer': 1},
+
+    {'q': "What is the distance of a marathon in miles?",
+     'opts': ["24.2", "25.2", "26.2", "27.2"], 'answer': 2},
+
+    {'q': "In tennis, what is the name for a serve that clips the net but lands in?",
+     'opts': ["Ace", "Let", "Fault", "Replay"], 'answer': 1},
+
+    {'q': "Which American swimmer won 8 gold medals at the 2008 Beijing Olympics?",
+     'opts': ["Mark Spitz", "Ryan Lochte", "Michael Phelps", "Nathan Adrian"], 'answer': 2},
+
+    {'q': "In soccer, how many minutes are in each half?",
+     'opts': ["40", "45", "50", "55"], 'answer': 1},
+
+    {'q': "What is the name of the annual American football championship game?",
+     'opts': ["The Final Bowl", "Super Bowl", "Championship Game", "The Grid Iron Cup"], 'answer': 1},
+
+    {'q': "In a Grand Slam men's final, how many sets must a player win?",
+     'opts': ["2", "3", "4", "5"], 'answer': 1},
+
+    {'q': "In which sport is the 'Fosbury Flop' technique used?",
+     'opts': ["Long Jump", "Pole Vault", "High Jump", "Triple Jump"], 'answer': 2},
+
+    {'q': "What is the term for scoring three goals in a single soccer match?",
+     'opts': ["Hat-trick", "Triple score", "Triple crown", "Brace"], 'answer': 0},
+
+    {'q': "How many players are on a handball team on the court?",
+     'opts': ["5", "6", "7", "8"], 'answer': 2},
+
+    {'q': "Which sprinter is known as 'The Lightning Bolt'?",
+     'opts': ["Carl Lewis", "Usain Bolt", "Florence Griffith-Joyner", "Tyson Gay"], 'answer': 1},
+
+    {'q': "In tennis, how many points do you need to win a tiebreak?",
+     'opts': ["5", "6", "7", "8"], 'answer': 2},
+
+    {'q': "What sport is played in the NHL?",
+     'opts': ["Basketball", "Baseball", "Ice Hockey", "American Football"], 'answer': 2},
+
+    {'q': "In cricket, how many balls make up one over?",
+     'opts': ["4", "5", "6", "7"], 'answer': 2},
+
+    {'q': "How high is the net in the middle of a standard tennis court (in feet)?",
+     'opts': ["2.5", "3", "3.5", "4"], 'answer': 1},
+
+    {'q': "What is the term for a perfect game in baseball (27 batters up, 27 out)?",
+     'opts': ["No-hitter", "Perfect game", "Shutout", "Clean sweep"], 'answer': 1},
+
+    {'q': "In which city is the famous Maracanã stadium located?",
+     'opts': ["São Paulo", "Buenos Aires", "Rio de Janeiro", "Montevideo"], 'answer': 2},
+
+    {'q': "What is the term for hitting a golf ball into the hole in one shot?",
+     'opts': ["Eagle", "Ace", "Birdie", "Condor"], 'answer': 1},
+
+    {'q': "How many players are on an American football team on the field?",
+     'opts': ["9", "10", "11", "12"], 'answer': 2},
+
+    {'q': "In which year did Roger Federer win his first Wimbledon title?",
+     'opts': ["2001", "2002", "2003", "2004"], 'answer': 2},
+
+    {'q': "In which sport is 'the Green Jacket' awarded at a prestigious annual tournament?",
+     'opts': ["Tennis", "Horse Racing", "Golf", "Cycling"], 'answer': 2},
+
+    {'q': "How many players are on the field in a rugby league match per team?",
+     'opts': ["13", "14", "15", "16"], 'answer': 0},
+
+    {'q': "In table tennis, how many points do you need to win a game?",
+     'opts': ["7", "9", "11", "15"], 'answer': 2},
+
+    {'q': "Who won the 2022 FIFA World Cup?",
+     'opts': ["France", "Brazil", "Germany", "Argentina"], 'answer': 3},
+
+    {'q': "In which sport is the term 'en garde' used?",
+     'opts': ["Karate", "Fencing", "Judo", "Boxing"], 'answer': 1},
+
+    {'q': "How many events are in a modern pentathlon?",
+     'opts': ["3", "4", "5", "6"], 'answer': 2},
+
+    {'q': "What is the lowest score possible in a single hole of golf?",
+     'opts': ["1", "2", "3", "4"], 'answer': 0},
+
+    {'q': "In which city are the NBA's Lakers based?",
+     'opts': ["Chicago", "Miami", "Los Angeles", "Dallas"], 'answer': 2},
+
+    {'q': "In Australian Rules Football, how many points is a behind worth?",
+     'opts': ["1", "2", "3", "4"], 'answer': 0},
+
+    {'q': "Who became the NBA's all-time leading scorer in 2023?",
+     'opts': ["Michael Jordan", "Kareem Abdul-Jabbar", "LeBron James", "Kobe Bryant"], 'answer': 2},
+
+    {'q': "In cricket, what is the term for a batsman scoring 100 runs?",
+     'opts': ["Half-century", "Century", "Double hundred", "Triple"], 'answer': 1},
+
+    {'q': "In which city is the Roland Garros tennis stadium located?",
+     'opts': ["London", "Rome", "Melbourne", "Paris"], 'answer': 3},
+
+    {'q': "What is the maximum number of sets in a women's Grand Slam final?",
+     'opts': ["3", "4", "5", "6"], 'answer': 0},
+
+    {'q': "How many laps make up the Monaco Grand Prix?",
+     'opts': ["50", "56", "60", "78"], 'answer': 3},
+
+    {'q': "In which sport would you find positions like 'wicketkeeper' and 'slip fielder'?",
+     'opts': ["Baseball", "Rounders", "Cricket", "Softball"], 'answer': 2},
+
+    {'q': "What is the term for three consecutive strikes in bowling?",
+     'opts': ["Triple", "Turkey", "Hat-trick", "Three-bagger"], 'answer': 1},
+
+    {'q': "How many rings are on the Olympic flag?",
+     'opts': ["4", "5", "6", "7"], 'answer': 1},
+
+    {'q': "In which year did Tiger Woods first win the Masters?",
+     'opts': ["1995", "1996", "1997", "1998"], 'answer': 2},
+
+    {'q': "In American football, what is a 'Hail Mary' pass?",
+     'opts': ["A short pass near the goal line", "A long desperate forward pass", "A lateral pass", "A fake punt"], 'answer': 1},
+
+    {'q': "How many players are on a polo team?",
+     'opts': ["2", "3", "4", "5"], 'answer': 2},
+
+    {'q': "In soccer, what is the term for a deliberate punch of the ball away by the goalkeeper?",
+     'opts': ["Clearance", "Save", "Punch", "Distribution"], 'answer': 0},
+
+    {'q': "What year did the first modern Olympic Games take place?",
+     'opts': ["1892", "1894", "1896", "1900"], 'answer': 2},
+
+    {'q': "In which sport is a 'birdie' scored?",
+     'opts': ["Tennis", "Badminton", "Golf", "Cricket"], 'answer': 2},
+
+    {'q': "How many players from each team are on the field in a hurling match?",
+     'opts': ["13", "14", "15", "16"], 'answer': 2},
+
+    {'q': "What is the name of the trophy awarded to the winner of the US football league each year?",
+     'opts': ["Vince Lombardi Trophy", "Pete Rozelle Trophy", "NFL Cup", "Champions Bowl"], 'answer': 0},
+
+    {'q': "Which country introduced the sport of baseball to Japan?",
+     'opts': ["UK", "Canada", "USA", "Cuba"], 'answer': 2},
+
+    {'q': "What year was the first FIFA World Cup held?",
+     'opts': ["1926", "1928", "1930", "1934"], 'answer': 2},
+
+    {'q': "How many players are on a netball team on the court?",
+     'opts': ["5", "6", "7", "8"], 'answer': 2},
+
+    {'q': "In which sport would you find a 'pommel horse'?",
+     'opts': ["Athletics", "Gymnastics", "Equestrian", "Acrobatics"], 'answer': 1},
+]
+
+POP_CULTURE_POOL = [
+    {'q': "Who sang the hit single 'Rolling in the Deep'?",
+     'opts': ["Rihanna", "Beyoncé", "Adele", "Taylor Swift"], 'answer': 2},
+
+    {'q': "In which TV show would you find Ross, Rachel, Monica, Chandler, Joey, and Phoebe?",
+     'opts': ["Seinfeld", "How I Met Your Mother", "Friends", "The Big Bang Theory"], 'answer': 2},
+
+    {'q': "What year was the original Star Wars (Episode IV) released?",
+     'opts': ["1975", "1976", "1977", "1978"], 'answer': 2},
+
+    {'q': "Which band performed 'Bohemian Rhapsody'?",
+     'opts': ["The Beatles", "Led Zeppelin", "Queen", "The Rolling Stones"], 'answer': 2},
+
+    {'q': "Who played Iron Man in the Marvel Cinematic Universe?",
+     'opts': ["Chris Evans", "Chris Pratt", "Robert Downey Jr.", "Mark Ruffalo"], 'answer': 2},
+
+    {'q': "Which Disney princess sings 'Let It Go'?",
+     'opts': ["Rapunzel", "Merida", "Moana", "Elsa"], 'answer': 3},
+
+    {'q': "What is the name of Harry Potter's owl?",
+     'opts': ["Crookshanks", "Scabbers", "Hedwig", "Errol"], 'answer': 2},
+
+    {'q': "Which TV show features Walter White?",
+     'opts': ["Dexter", "Breaking Bad", "Ozark", "Better Call Saul"], 'answer': 1},
+
+    {'q': "What year did Michael Jackson release 'Thriller'?",
+     'opts': ["1980", "1981", "1982", "1983"], 'answer': 2},
+
+    {'q': "Which film features the quote 'Here's looking at you, kid'?",
+     'opts': ["Gone with the Wind", "Casablanca", "The Godfather", "Citizen Kane"], 'answer': 1},
+
+    {'q': "What is the name of the coffee shop in Friends?",
+     'opts': ["Café Central", "Central Perk", "The Coffee Bean", "Java Joe's"], 'answer': 1},
+
+    {'q': "Who directed the film Titanic (1997)?",
+     'opts': ["Steven Spielberg", "Ridley Scott", "James Cameron", "Peter Jackson"], 'answer': 2},
+
+    {'q': "Which artist released the album '1989'?",
+     'opts': ["Katy Perry", "Lady Gaga", "Ariana Grande", "Taylor Swift"], 'answer': 3},
+
+    {'q': "Which fictional kingdom does Elsa rule in Frozen?",
+     'opts': ["Agrabah", "Arendelle", "Dunbroch", "Motunui"], 'answer': 1},
+
+    {'q': "Which TV show features the fictional Dunder Mifflin Paper Company?",
+     'opts': ["Parks and Recreation", "Brooklyn Nine-Nine", "The Office", "30 Rock"], 'answer': 2},
+
+    {'q': "What is the highest-grossing film of all time worldwide?",
+     'opts': ["The Avengers", "Avatar", "Avengers: Endgame", "Titanic"], 'answer': 1},
+
+    {'q': "Who is the lead vocalist of the band U2?",
+     'opts': ["The Edge", "Bono", "Larry Mullen Jr.", "Adam Clayton"], 'answer': 1},
+
+    {'q': "Which movie features the line 'I'll be back'?",
+     'opts': ["RoboCop", "Predator", "The Terminator", "Total Recall"], 'answer': 2},
+
+    {'q': "What year did the first iPhone go on sale?",
+     'opts': ["2005", "2006", "2007", "2008"], 'answer': 2},
+
+    {'q': "Which animated show features the Griffin family?",
+     'opts': ["The Simpsons", "American Dad", "Family Guy", "Bob's Burgers"], 'answer': 2},
+
+    {'q': "Who played Katniss Everdeen in The Hunger Games films?",
+     'opts': ["Emma Watson", "Shailene Woodley", "Jennifer Lawrence", "Kristen Stewart"], 'answer': 2},
+
+    {'q': "Which actor played the Joker in The Dark Knight (2008)?",
+     'opts': ["Jack Nicholson", "Jared Leto", "Joaquin Phoenix", "Heath Ledger"], 'answer': 3},
+
+    {'q': "Which pop star is known as the 'Queen of Pop'?",
+     'opts': ["Beyoncé", "Madonna", "Lady Gaga", "Whitney Houston"], 'answer': 1},
+
+    {'q': "Which film series is set in a world called Middle-earth?",
+     'opts': ["Harry Potter", "The Lord of the Rings", "Narnia", "Game of Thrones"], 'answer': 1},
+
+    {'q': "What does 'MCU' stand for in entertainment?",
+     'opts': ["Movie Cinema Universe", "Marvel Cinematic Universe", "Major Creative Unlimited", "Mega Comics Universe"], 'answer': 1},
+
+    {'q': "Which TV show is set in Westeros?",
+     'opts': ["Vikings", "The Witcher", "Game of Thrones", "The Last Kingdom"], 'answer': 2},
+
+    {'q': "Who sang 'Baby One More Time' in 1999?",
+     'opts': ["Christina Aguilera", "Britney Spears", "Mandy Moore", "Jessica Simpson"], 'answer': 1},
+
+    {'q': "Which movie studio created the animated film Toy Story (1995)?",
+     'opts': ["DreamWorks", "Universal", "Pixar", "Warner Bros."], 'answer': 2},
+
+    {'q': "What is the real name of the rapper known as Eminem?",
+     'opts': ["Marshall Mathers", "Curtis Jackson", "Shawn Carter", "Calvin Broadus"], 'answer': 0},
+
+    {'q': "Which superhero is also known as the Caped Crusader?",
+     'opts': ["Superman", "Batman", "Spider-Man", "Flash"], 'answer': 1},
+
+    {'q': "Who starred as Jack Dawson in Titanic (1997)?",
+     'opts': ["Brad Pitt", "Matt Damon", "Leonardo DiCaprio", "Tom Hanks"], 'answer': 2},
+
+    {'q': "What was the first feature-length animated film produced by Disney?",
+     'opts': ["Pinocchio", "Bambi", "Snow White and the Seven Dwarfs", "Fantasia"], 'answer': 2},
+
+    {'q': "What is Sherlock Holmes' famous address in London?",
+     'opts': ["10 Downing Street", "221B Baker Street", "12 Grimmauld Place", "4 Privet Drive"], 'answer': 1},
+
+    {'q': "Which boy band released the song 'Bye Bye Bye' in 2000?",
+     'opts': ["Backstreet Boys", "*NSYNC", "Boyz II Men", "New Kids on the Block"], 'answer': 1},
+
+    {'q': "What is the name of the fictional country in Black Panther?",
+     'opts': ["Narobia", "Wakanda", "Genosha", "Sokovia"], 'answer': 1},
+
+    {'q': "Which artist released the album 'Lemonade' in 2016?",
+     'opts': ["Rihanna", "Cardi B", "Beyoncé", "Nicki Minaj"], 'answer': 2},
+
+    {'q': "In which movie does a wizard say 'You shall not pass!'?",
+     'opts': ["Harry Potter", "The Lord of the Rings", "Narnia", "The Hobbit"], 'answer': 1},
+
+    {'q': "Which actress played Hermione Granger in the Harry Potter films?",
+     'opts': ["Keira Knightley", "Natalie Portman", "Emma Watson", "Lily James"], 'answer': 2},
+
+    {'q': "Which music artist has the most Grammy Awards won (as of 2024)?",
+     'opts': ["Taylor Swift", "Beyoncé", "Georg Solti", "Quincy Jones"], 'answer': 1},
+
+    {'q': "What fictional town is the setting for Stranger Things?",
+     'opts': ["Hawkins, Indiana", "Derry, Maine", "Castle Rock, Maine", "Springfield, Illinois"], 'answer': 0},
+
+    {'q': "Who played James Bond in Casino Royale (2006)?",
+     'opts': ["Pierce Brosnan", "Timothy Dalton", "Daniel Craig", "Roger Moore"], 'answer': 2},
+
+    {'q': "What year did Elvis Presley die?",
+     'opts': ["1975", "1976", "1977", "1978"], 'answer': 2},
+
+    {'q': "Which film features the quote 'Life is like a box of chocolates'?",
+     'opts': ["Rain Man", "Jerry Maguire", "Cast Away", "Forrest Gump"], 'answer': 3},
+
+    {'q': "Which animated series features Homer, Marge, Bart, and Lisa?",
+     'opts': ["Futurama", "King of the Hill", "The Simpsons", "South Park"], 'answer': 2},
+
+    {'q': "What is the name of the wizard school in Harry Potter?",
+     'opts': ["Durmstrang", "Beauxbatons", "Hogwarts", "Castelobruxo"], 'answer': 2},
+
+    {'q': "Which movie franchise includes the 'Kessel Run' storyline?",
+     'opts': ["Star Trek", "Guardians of the Galaxy", "Star Wars", "Dune"], 'answer': 2},
+
+    {'q': "Who played the Joker in Joker (2019)?",
+     'opts': ["Jared Leto", "Heath Ledger", "Mark Hamill", "Joaquin Phoenix"], 'answer': 3},
+
+    {'q': "In which TV show would you find Daenerys Targaryen?",
+     'opts': ["The Witcher", "Outlander", "Game of Thrones", "Vikings"], 'answer': 2},
+
+    {'q': "Which animated Disney film features the song 'Under the Sea'?",
+     'opts': ["The Little Mermaid", "Finding Nemo", "Moana", "Aladdin"], 'answer': 0},
+
+    {'q': "What is the name of the toy cowboy in Toy Story?",
+     'opts': ["Buzz Lightyear", "Woody", "Rex", "Hamm"], 'answer': 1},
+
+    {'q': "Which pop group performed 'Wannabe' in 1996?",
+     'opts': ["The Sugababes", "Destiny's Child", "Spice Girls", "TLC"], 'answer': 2},
+
+    {'q': "Who wrote the Harry Potter book series?",
+     'opts': ["Suzanne Collins", "Stephenie Meyer", "J.K. Rowling", "Philip Pullman"], 'answer': 2},
+
+    {'q': "What is the name of Tony Stark's AI assistant in the original Iron Man films?",
+     'opts': ["Friday", "Vision", "JARVIS", "Ultron"], 'answer': 2},
+
+    {'q': "In which show do characters say 'How you doin'?",
+     'opts': ["Seinfeld", "Friends", "How I Met Your Mother", "Cheers"], 'answer': 1},
+
+    {'q': "Which film franchise features the secret agent known as '007'?",
+     'opts': ["Mission: Impossible", "James Bond", "Bourne", "Jack Ryan"], 'answer': 1},
+
+    {'q': "What was the first music video ever played on MTV?",
+     'opts': ["Video Killed the Radio Star", "Billie Jean", "Money for Nothing", "Jump"], 'answer': 0},
+
+    {'q': "Which actor played Bruce Wayne in The Dark Knight trilogy?",
+     'opts': ["George Clooney", "Michael Keaton", "Val Kilmer", "Christian Bale"], 'answer': 3},
+
+    {'q': "Which song by Pharrell Williams stayed at number one in the US for 24 weeks?",
+     'opts': ["Get Lucky", "Happy", "Blurred Lines", "Uptown Funk"], 'answer': 1},
+
+    {'q': "What is the name of the island in Jurassic Park?",
+     'opts': ["Isla Sorna", "Isla Nublar", "Isla de Muertes", "Isla Cabra"], 'answer': 1},
+
+    {'q': "Which TV show features the fictional Bluth family?",
+     'opts': ["Arrested Development", "Succession", "Schitt's Creek", "Modern Family"], 'answer': 0},
+
+    {'q': "What was the best-selling album of the 20th century?",
+     'opts': ["Abbey Road", "Thriller", "Back in Black", "The Dark Side of the Moon"], 'answer': 1},
+
+    {'q': "Who created the cartoon character Mickey Mouse?",
+     'opts': ["Walt Disney", "Chuck Jones", "Tex Avery", "Max Fleischer"], 'answer': 0},
+
+    {'q': "Which actress played Black Widow in the MCU?",
+     'opts': ["Brie Larson", "Gal Gadot", "Scarlett Johansson", "Zoe Saldana"], 'answer': 2},
+
+    {'q': "What is the name of SpongeBob's best friend?",
+     'opts': ["Squidward", "Sandy", "Patrick", "Gary"], 'answer': 2},
+
+    {'q': "Which music genre did Elvis Presley help popularise in the 1950s?",
+     'opts': ["Jazz", "Blues", "Rock and Roll", "Country"], 'answer': 2},
+
+    {'q': "Which 2010 film features characters navigating levels of dreams?",
+     'opts': ["Interstellar", "The Matrix", "Inception", "Eternal Sunshine"], 'answer': 2},
+
+    {'q': "Who voiced Mufasa in The Lion King (1994)?",
+     'opts': ["James Earl Jones", "Morgan Freeman", "Denzel Washington", "Samuel L. Jackson"], 'answer': 0},
+
+    {'q': "Which TV show is set in the fictional town of Pawnee, Indiana?",
+     'opts': ["The Office", "Parks and Recreation", "Community", "Brooklyn Nine-Nine"], 'answer': 1},
+
+    {'q': "What is the subtitle of the fourth Avengers film?",
+     'opts': ["Infinity War", "Age of Ultron", "Civil War", "Endgame"], 'answer': 3},
+
+    {'q': "Who sang the James Bond theme for Skyfall?",
+     'opts': ["Shirley Bassey", "Duran Duran", "Adele", "Sam Smith"], 'answer': 2},
+
+    {'q': "Who wrote the 'A Song of Ice and Fire' novels that Game of Thrones is based on?",
+     'opts': ["J.R.R. Tolkien", "George R.R. Martin", "Brandon Sanderson", "Robert Jordan"], 'answer': 1},
+
+    {'q': "Which film features the memorable dance scene between Uma Thurman and John Travolta?",
+     'opts': ["Natural Born Killers", "Pulp Fiction", "Reservoir Dogs", "Jackie Brown"], 'answer': 1},
+
+    {'q': "What year did the final episode of Seinfeld air?",
+     'opts': ["1996", "1997", "1998", "1999"], 'answer': 2},
+
+    {'q': "Who plays Eleven in Stranger Things?",
+     'opts': ["Sadie Sink", "Millie Bobby Brown", "Natalia Dyer", "Maya Hawke"], 'answer': 1},
+
+    {'q': "Which animated Pixar film features a rat who wants to become a chef in Paris?",
+     'opts': ["Chef", "Ratatouille", "WALL-E", "A Bug's Life"], 'answer': 1},
+
+    {'q': "What year was the first Shrek film released?",
+     'opts': ["1999", "2000", "2001", "2002"], 'answer': 2},
+
+    {'q': "Which iconic rock band featured members Mick Jagger and Keith Richards?",
+     'opts': ["The Who", "Led Zeppelin", "The Rolling Stones", "Aerosmith"], 'answer': 2},
+
+    {'q': "In which TV show does the character Don Draper work?",
+     'opts': ["The Wire", "Mad Men", "Suits", "Billions"], 'answer': 1},
+
+    {'q': "Which actress starred in Legally Blonde (2001)?",
+     'opts': ["Cameron Diaz", "Reese Witherspoon", "Julia Roberts", "Sandra Bullock"], 'answer': 1},
+
+    {'q': "Which pop star had a famous wardrobe malfunction at the 2004 Super Bowl halftime show?",
+     'opts': ["Beyoncé", "Britney Spears", "Janet Jackson", "Jennifer Lopez"], 'answer': 2},
+
+    {'q': "What year was the TV show Lost first aired?",
+     'opts': ["2002", "2003", "2004", "2005"], 'answer': 2},
+
+    {'q': "What is the name of the killer in the Scream film franchise?",
+     'opts': ["Ghostface", "Jason Voorhees", "Michael Myers", "Freddy Krueger"], 'answer': 0},
+
+    {'q': "Who played Neo in The Matrix (1999)?",
+     'opts': ["Will Smith", "Brad Pitt", "Tom Cruise", "Keanu Reeves"], 'answer': 3},
+
+    {'q': "What famous TV show features the fictional town of Springfield?",
+     'opts': ["South Park", "Futurama", "The Simpsons", "King of the Hill"], 'answer': 2},
+
+    {'q': "What is the name of Moe's bar in The Simpsons?",
+     'opts': ["The Rusty Nail", "Paddy's Pub", "Moe's Tavern", "McLaren's Pub"], 'answer': 2},
+
+    {'q': "Which singer is known as 'The King of Pop'?",
+     'opts': ["Prince", "Elvis Presley", "Michael Jackson", "David Bowie"], 'answer': 2},
+
+    {'q': "Which film series features the fictional wizard Dumbledore?",
+     'opts': ["Narnia", "The Lord of the Rings", "Harry Potter", "Merlin"], 'answer': 2},
+
+    {'q': "Who sang 'We Are the World' (1985)?",
+     'opts': ["USA for Africa — various artists", "Michael Jackson solo", "The Beatles", "Prince"], 'answer': 0},
+
+    {'q': "In which year did the final episode of Game of Thrones air?",
+     'opts': ["2017", "2018", "2019", "2020"], 'answer': 2},
+
+    {'q': "Which Netflix show is set in a dystopian future where people are matched by algorithm?",
+     'opts': ["Altered Carbon", "Black Mirror", "Love, Death & Robots", "Westworld"], 'answer': 1},
+
+    {'q': "What is the name of the fictional high school in Grease (1978)?",
+     'opts': ["Jefferson High", "Rydell High", "West Beverly High", "Bayside High"], 'answer': 1},
+
+    {'q': "Which animated film features the character Simba?",
+     'opts': ["The Jungle Book", "Bambi", "Tarzan", "The Lion King"], 'answer': 3},
+
+    {'q': "What is the name of the fictional spaceship in Star Trek: The Next Generation?",
+     'opts': ["USS Voyager", "USS Enterprise", "USS Defiant", "Millennium Falcon"], 'answer': 1},
+
+    {'q': "Which actor played Forrest Gump?",
+     'opts': ["Tom Cruise", "Tom Hanks", "Kevin Costner", "Brad Pitt"], 'answer': 1},
+
+    {'q': "Which band sang 'Smells Like Teen Spirit'?",
+     'opts': ["Pearl Jam", "Soundgarden", "Nirvana", "Alice in Chains"], 'answer': 2},
+
+    {'q': "What year was the social network Facebook launched to the public?",
+     'opts': ["2004", "2005", "2006", "2007"], 'answer': 2},
+
+    {'q': "Which reality TV show features the catchphrase 'You're fired'?",
+     'opts': ["Big Brother", "Survivor", "The Apprentice", "The Amazing Race"], 'answer': 2},
+
+    {'q': "What is the name of the robot in the film WALL-E?",
+     'opts': ["EVE", "R2-D2", "WALL-E", "HAL"], 'answer': 2},
+
+    {'q': "Which TV show features the fictional town of Hawkins in the 1980s?",
+     'opts': ["Dark", "Stranger Things", "The Americans", "Dark Angel"], 'answer': 1},
+
+    {'q': "Who sang 'Shape of You' in 2017?",
+     'opts': ["Sam Smith", "Ed Sheeran", "Harry Styles", "Shawn Mendes"], 'answer': 1},
+
+    {'q': "Which film sequel featured the tagline 'Just when you thought it was safe to go back in the water'?",
+     'opts': ["Jaws 2", "The Deep", "Piranha II", "Open Water"], 'answer': 0},
+]
+
+ALL_POOLS = [
+    ('Video Games', VIDEOGAME_POOL),
+    ('Sports',      SPORTS_POOL),
+    ('Pop Culture', POP_CULTURE_POOL),
+]
+
 
 # ── Trivia minigame class ─────────────────────────────────────────────────────
 
@@ -358,7 +971,9 @@ class TriviaMinigame:
         self.player_col    = player.col
         self.player_name   = player.fighter
         self.salomon_hp    = self.SALOMON_MAX_HP
-        self.questions     = random.sample(QUESTION_POOL, 3)
+        cat_name, pool     = random.choice(ALL_POOLS)
+        self.category      = cat_name
+        self.questions     = random.sample(pool, 3)
         self.current_q     = 0
         self.phase         = 'intro'      # 'intro' | 'question' | 'feedback' | 'done'
         self.intro_timer   = self.INTRO_DUR
@@ -435,10 +1050,13 @@ class TriviaMinigame:
             c    = lambda base: tuple(int(b * fade / 255) for b in base)
             t = font_title.render('SALOMON CHALLENGES YOU IN A TRIVIA BATTLE!',
                                   True, c(SALOMON_OUT))
-            surf.blit(t, (cx - t.get_width() // 2, 240))
+            surf.blit(t, (cx - t.get_width() // 2, 220))
+            t = font_big.render(f'Category:  {self.category.upper()}',
+                                True, c(GOLD_COL))
+            surf.blit(t, (cx - t.get_width() // 2, 290))
             t = font_big.render('Answer 3 questions correctly to proceed.',
                                 True, c(UI_MUTED))
-            surf.blit(t, (cx - t.get_width() // 2, 320))
+            surf.blit(t, (cx - t.get_width() // 2, 330))
             if self.INTRO_DUR - self.intro_timer > 55:
                 t = font.render('PRESS ENTER or SPACE to start',
                                 True, c((200, 170, 110)))
