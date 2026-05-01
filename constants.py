@@ -27,7 +27,7 @@ SCORES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "highscor
 # ── Gameplay timers (frames) ──────────────────────────────────────────────────
 ARROW_RECHARGE  = 360   # 6 s
 BOMB_RECHARGE   = 600   # 10 s
-INVULN_DURATION = 210   # 3.5 s
+INVULN_DURATION = 315   # 5.25 s
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 BLACK          = (10,  8,  12)
@@ -116,7 +116,9 @@ FIGHTERS = [
         'atk_size_base':  36,
         'atk_size_boost': 54,
         'arrow_dmg':      10,
-        'bomb_dmg':       2,
+        'bomb_dmg':       30,
+        'bomb_radius':    800,
+        'max_bombs':      3,
         'max_arrows':     10,
         'traits': ['10 damage per melee hit', '10 arrows, 10 dmg each'],
     },

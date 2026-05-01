@@ -18,7 +18,7 @@ class Player:
     ATK_DUR     = 10
     IFRAMES     = 60
     SPEED_DUR   = 360
-    ATTACK_DUR  = 360
+    ATTACK_DUR  = 540
     MAX_ARROWS  = 3
     MAX_BOMBS   = 1
 
@@ -32,7 +32,9 @@ class Player:
         self.atk_size_boost = f['atk_size_boost']
         self.arrow_dmg      = f['arrow_dmg']
         self.bomb_dmg       = f['bomb_dmg']
+        self.bomb_radius    = f.get('bomb_radius', None)
         self.MAX_ARROWS     = f.get('max_arrows', Player.MAX_ARROWS)
+        self.MAX_BOMBS      = f.get('max_bombs',  Player.MAX_BOMBS)
 
         self.x = 0.0
         self.y = 0.0
@@ -120,7 +122,8 @@ class Player:
             fx, fy = self.facing
             return Bomb(self.cx, self.cy,
                         fx * Bomb.SPEED, fy * Bomb.SPEED,
-                        damage=self.bomb_dmg)
+                        damage=self.bomb_dmg,
+                        radius=self.bomb_radius)
         return None
 
     def take_damage(self, amount):

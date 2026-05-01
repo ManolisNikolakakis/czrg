@@ -126,7 +126,7 @@ def spawn_bambie_minions():
         (ROOM_X + m,                      ROOM_Y + m),
         (ROOM_X + (ROOM_COLS - 3) * TILE, ROOM_Y + (ROOM_ROWS - 3) * TILE),
     ]
-    return [RangedEnemy(x, y, hp=3, speed=1.1) for x, y in corners]
+    return [RangedEnemy(x, y, hp=3, speed=1.1, aggro=9999) for x, y in corners]
 
 
 def spawn_salomon_minions():
@@ -136,8 +136,8 @@ def spawn_salomon_minions():
         (ROOM_X + (ROOM_COLS - 3) * TILE, ROOM_Y + (ROOM_ROWS - 3) * TILE),
     ]
     return [
-        RangedEnemy(x, y, hp=3, speed=0.85) if i % 2 == 0
-        else Enemy(x, y, hp=3, speed=1.0)
+        RangedEnemy(x, y, hp=3, speed=0.85, aggro=9999) if i % 2 == 0
+        else Enemy(x, y, hp=3, speed=1.0, aggro=9999)
         for i, (x, y) in enumerate(corners)
     ]
 
@@ -151,8 +151,8 @@ def spawn_boss_minions():
         (ROOM_X + (ROOM_COLS - 3) * TILE, ROOM_Y + (ROOM_ROWS - 3) * TILE),
     ]
     return [
-        RangedEnemy(x, y, hp=3, speed=0.9) if random.random() < 0.5
-        else Enemy(x, y, hp=4, speed=1.0)
+        RangedEnemy(x, y, hp=3, speed=0.9, aggro=9999) if random.random() < 0.5
+        else Enemy(x, y, hp=4, speed=1.0, aggro=9999)
         for x, y in corners
     ]
 

@@ -37,14 +37,15 @@ class Enemy:
     AGGRO_RANGE = 320
     IFRAMES     = 18
 
-    def __init__(self, x, y, hp=3, speed=0.90):
-        self.x       = float(x)
-        self.y       = float(y)
-        self.hp      = hp
-        self.max_hp  = hp
-        self.speed   = speed
-        self.alive   = True
-        self.iframes = 0
+    def __init__(self, x, y, hp=3, speed=0.90, aggro=None):
+        self.x          = float(x)
+        self.y          = float(y)
+        self.hp         = hp
+        self.max_hp     = hp
+        self.speed      = speed
+        self.alive      = True
+        self.iframes    = 0
+        self.aggro_range = aggro if aggro is not None else self.AGGRO_RANGE
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -68,7 +69,7 @@ class Enemy:
         dx   = player.cx - self.cx
         dy   = player.cy - self.cy
         dist = math.hypot(dx, dy)
-        if 0 < dist < self.AGGRO_RANGE:
+        if 0 < dist < self.aggro_range:
             dx /= dist
             dy /= dist
             self.x += dx * self.speed
@@ -103,17 +104,18 @@ class RangedEnemy:
     PREFER_DIST = 140
     IFRAMES     = 18
 
-    def __init__(self, x, y, hp=2, speed=0.75):
-        self.x       = float(x)
-        self.y       = float(y)
-        self.hp      = hp
-        self.max_hp  = hp
-        self.speed   = speed
-        self.alive   = True
-        self.iframes = 0
-        self.strafe  = random.choice((-1, 1))
-        self.shoot_cd = random.randint(30, 80)   # stagger initial shots
+    def __init__(self, x, y, hp=2, speed=0.75, aggro=None):
+        self.x           = float(x)
+        self.y           = float(y)
+        self.hp          = hp
+        self.max_hp      = hp
+        self.speed       = speed
+        self.alive       = True
+        self.iframes     = 0
+        self.strafe      = random.choice((-1, 1))
+        self.shoot_cd    = random.randint(30, 80)   # stagger initial shots
         self.projectiles = []
+        self.aggro_range = aggro if aggro is not None else self.AGGRO_RANGE
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -139,7 +141,7 @@ class RangedEnemy:
         dy   = player.cy - self.cy
         dist = math.hypot(dx, dy)
 
-        if 0 < dist < self.AGGRO_RANGE:
+        if 0 < dist < self.aggro_range:
             ndx, ndy = dx / dist, dy / dist
 
             if dist < self.PREFER_DIST - 20:

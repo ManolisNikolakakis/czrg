@@ -131,7 +131,7 @@ class Bomb:
     DAMAGE         = 8   # default; overridden per fighter
     EXPLODE_FRAMES = 24
 
-    def __init__(self, x, y, vx, vy, damage=None):
+    def __init__(self, x, y, vx, vy, damage=None, radius=None):
         self.x         = float(x)
         self.y         = float(y)
         self.vx        = vx
@@ -141,6 +141,7 @@ class Bomb:
         self.exploding = False
         self.exp_frame = 0
         self.damage    = damage if damage is not None else self.DAMAGE
+        self.radius    = radius if radius is not None else self.RADIUS
 
     def update(self, enemies, boss):
         if self.exploding:
@@ -167,15 +168,15 @@ class Bomb:
         self.exploding = True
         self.exp_frame = 0
         for e in enemies:
-            if e.alive and _math.hypot(e.cx - self.x, e.cy - self.y) < self.RADIUS:
+            if e.alive and _math.hypot(e.cx - self.x, e.cy - self.y) < self.radius:
                 e.take_damage(self.damage)
-        if boss and boss.alive and _math.hypot(boss.cx - self.x, boss.cy - self.y) < self.RADIUS:
+        if boss and boss.alive and _math.hypot(boss.cx - self.x, boss.cy - self.y) < self.radius:
             boss.take_damage(self.damage)
 
     def draw(self, surf, tick):
         if self.exploding:
             t = self.exp_frame / self.EXPLODE_FRAMES
-            r = max(1, int(self.RADIUS * t))
+            r = max(1, int(self.radius * t))
             a = int(255 * (1 - t))
             s = pygame.Surface((r * 2 + 2, r * 2 + 2), pygame.SRCALPHA)
             pygame.draw.circle(s, (255, 160, 40, a // 2), (r + 1, r + 1), r)

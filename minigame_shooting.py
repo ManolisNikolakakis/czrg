@@ -21,7 +21,7 @@ ARROW_SPEED  = 630
 CURSOR_SPEED = 285
 TOTAL_ARROWS = 5
 HITS_TO_WIN  = 3
-TIME_LIMIT   = 10.0
+TIME_LIMIT   = 20.0
 
 # ── Colours ────────────────────────────────────────────────────────────────────
 SKY         = (24, 18, 38)
