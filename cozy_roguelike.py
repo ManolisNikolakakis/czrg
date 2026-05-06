@@ -5,7 +5,8 @@ import random
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
-    SCORES_FILE, MENU, CHAR_SELECT, PLAYING, TRIVIA, PAUSED, NAME_ENTRY, SCORES,
+    SCORES_FILE, MENU, CHAR_SELECT, PLAYING, TRIVIA, PAUSED, NAME_ENTRY, SCORES, CREDITS,
+    CONTROLS,
     OVERLAY_R, OVERLAY_W, SPEED_COL, FIGHTERS,
 )
 from minigame_trivia   import TriviaMinigame
@@ -24,7 +25,8 @@ from enemies  import Salomon, Bambie
 from ui       import (NameEntry, draw_hud, draw_boss_bar, draw_end_panel,
                       draw_room_banner, draw_menu, draw_scores_screen,
                       draw_name_entry_screen, draw_pause_screen,
-                      draw_char_select)
+                      draw_char_select, draw_credits_screen,
+                      draw_controls_screen)
 
 pygame.init()
 
@@ -90,11 +92,12 @@ def main():
     player_arrows = []
     player_bombs  = []
 
-    ne            = None
-    highlight_idx = -1
-    tick          = 0
-    pause_sel     = 0
-    trivia        = None
+    ne             = None
+    highlight_idx  = -1
+    tick           = 0
+    pause_sel      = 0
+    trivia         = None
+    controls_from  = MENU
 
     # Minigame assignment: picked fresh each run (pre-generated before the hub so
     # the hub NPCs can hint at what's coming next).
@@ -146,9 +149,9 @@ def main():
 
                 if state == MENU:
                     if event.key in (pygame.K_UP, pygame.K_w):
-                        menu_sel = (menu_sel - 1) % 3
+                        menu_sel = (menu_sel - 1) % 5
                     elif event.key in (pygame.K_DOWN, pygame.K_s):
-                        menu_sel = (menu_sel + 1) % 3
+                        menu_sel = (menu_sel + 1) % 5
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         if menu_sel == 0:
                             state = CHAR_SELECT
@@ -156,6 +159,11 @@ def main():
                             highlight_idx    = -1
                             scores_from_game = False
                             state            = SCORES
+                        elif menu_sel == 2:
+                            controls_from = MENU
+                            state         = CONTROLS
+                        elif menu_sel == 3:
+                            state = CREDITS
                         else:
                             pygame.quit()
                             sys.exit()
@@ -219,9 +227,9 @@ def main():
 
                 elif state == PAUSED:
                     if event.key in (pygame.K_UP, pygame.K_w):
-                        pause_sel = (pause_sel - 1) % 3
+                        pause_sel = (pause_sel - 1) % 4
                     elif event.key in (pygame.K_DOWN, pygame.K_s):
-                        pause_sel = (pause_sel + 1) % 3
+                        pause_sel = (pause_sel + 1) % 4
                     elif event.key == pygame.K_ESCAPE:
                         state = PLAYING
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
@@ -230,6 +238,9 @@ def main():
                         elif pause_sel == 1:
                             _reset()
                             state = PLAYING
+                        elif pause_sel == 2:
+                            controls_from = PAUSED
+                            state         = CONTROLS
                         else:
                             state = MENU
 
@@ -257,6 +268,14 @@ def main():
                             state = CHAR_SELECT
                         else:
                             state = MENU
+
+                elif state == CREDITS:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_KP_ENTER):
+                        state = MENU
+
+                elif state == CONTROLS:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_KP_ENTER):
+                        state = controls_from
 
         # ── Game update ───────────────────────────────────────────────────────
         if state == PLAYING and not game_over and not won:
@@ -468,6 +487,13 @@ def main():
 
         elif state == SCORES:
             draw_scores_screen(screen, font, font_big, scores, highlight_idx)
+
+        elif state == CREDITS:
+            draw_credits_screen(screen, font, font_big, font_title)
+
+        elif state == CONTROLS:
+            draw_controls_screen(screen, font, font_big, font_title,
+                                 from_pause=(controls_from == PAUSED))
 
         pygame.display.flip()
         clock.tick(FPS)

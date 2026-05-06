@@ -69,21 +69,23 @@ def draw_bg(surf):
 def draw_hud(surf, font, player, enemies, elapsed_ticks, best_score,
              room_num, portal, boss):
     # ── Left: HP / buffs / portal hint ────────────────────────────────────────
-    bx, by, bw, bh = 10, 10, 120, 14
-    _hbar(surf, bx, by, bw, bh, player.hp / player.max_hp, HP_BG, HP_FG, UI_WHITE)
-    surf.blit(font.render(f"HP {player.hp}/{player.max_hp}", True, UI_WHITE), (bx + 2, by + 1))
+    bx, by = 10, 10
+    hp_bw, hp_bh = 240, 28
+    _hbar(surf, bx, by, hp_bw, hp_bh, player.hp / player.max_hp, HP_BG, HP_FG, UI_WHITE)
+    surf.blit(font.render(f"HP {player.hp}/{player.max_hp}", True, UI_WHITE), (bx + 2, by + 6))
 
     elabel = f"Enemies: {len(enemies)}" + ("  +BOSS" if boss and boss.alive else "")
-    surf.blit(font.render(elabel, True, UI_MUTED), (bx, by + 18))
+    surf.blit(font.render(elabel, True, UI_MUTED), (bx, by + hp_bh + 6))
 
-    py = by + 36
+    buf_bw, buf_bh = 120, 14
+    py = by + hp_bh + 26
     for label, timer, dur, col in [
         ("SPEED",  player.speed_timer,  player.SPEED_DUR,  SPEED_COL),
         ("ATTACK", player.attack_timer, player.ATTACK_DUR, ATTACK_BCOL),
         ("INVULN", player.invuln_timer, INVULN_DURATION,   INVULN_COL),
     ]:
         if timer:
-            _hbar(surf, bx, py, bw, bh, timer / dur, HP_BG, col, col)
+            _hbar(surf, bx, py, buf_bw, buf_bh, timer / dur, HP_BG, col, col)
             surf.blit(font.render(label, True, col), (bx + 2, py + 1))
             py += 18
 
@@ -101,33 +103,33 @@ def draw_hud(surf, font, player, enemies, elapsed_ticks, best_score,
 
     KEY_COL = (95, 88, 78)
 
-    # Arrows
-    AY = 44
-    surf.blit(font.render("E", True, KEY_COL), (rx - 62, AY + 1))
+    # Arrows (2× size)
+    AY = 52
+    surf.blit(font.render("E", True, KEY_COL), (rx - 120, AY + 4))
     for i in range(player.MAX_ARROWS):
         ready = i < player.arrows
         col   = PLAYER_ARROW_C if ready else (50, 58, 44)
-        ix    = rx - 14 - (player.MAX_ARROWS - 1 - i) * 17
+        ix    = rx - 28 - (player.MAX_ARROWS - 1 - i) * 34
         iy    = AY
-        pygame.draw.polygon(surf, col, [(ix + 10, iy + 4), (ix + 3, iy), (ix + 3, iy + 8)])
-        pygame.draw.line(surf, col, (ix - 2, iy + 4), (ix + 7, iy + 4), 2)
+        pygame.draw.polygon(surf, col, [(ix + 20, iy + 8), (ix + 6, iy), (ix + 6, iy + 16)])
+        pygame.draw.line(surf, col, (ix - 4, iy + 8), (ix + 14, iy + 8), 4)
     if player.arrows < player.MAX_ARROWS:
         frac = 1.0 - player.arrow_timer / ARROW_RECHARGE
-        _hbar(surf, rx - 54, AY + 12, 46, 3, frac, (35, 44, 30), PLAYER_ARROW_C)
+        _hbar(surf, rx - 108, AY + 22, 92, 6, frac, (35, 44, 30), PLAYER_ARROW_C)
 
-    # Bomb
-    BY = 62
-    surf.blit(font.render("Q", True, KEY_COL), (rx - 62, BY + 1))
+    # Bomb (2× size)
+    BY = AY + 42
+    surf.blit(font.render("Q", True, KEY_COL), (rx - 120, BY + 4))
     bready = player.bombs > 0
     bcol = BOMB_COL if bready else (65, 50, 38)
     ic   = (255, 245, 160) if bready else (110, 80, 50)
-    pygame.draw.circle(surf, bcol, (rx - 26, BY + 5), 6)
-    pygame.draw.circle(surf, ic,   (rx - 26, BY + 5), 3)
+    pygame.draw.circle(surf, bcol, (rx - 30, BY + 10), 12)
+    pygame.draw.circle(surf, ic,   (rx - 30, BY + 10), 6)
     if bready:
-        pygame.draw.line(surf, (160, 110, 20), (rx - 26, BY - 1), (rx - 21, BY - 6), 2)
+        pygame.draw.line(surf, (160, 110, 20), (rx - 30, BY - 2), (rx - 18, BY - 12), 4)
     else:
         frac = 1.0 - player.bomb_timer / BOMB_RECHARGE
-        _hbar(surf, rx - 54, BY + 12, 46, 3, frac, (50, 40, 30), BOMB_COL)
+        _hbar(surf, rx - 108, BY + 26, 92, 6, frac, (50, 40, 30), BOMB_COL)
 
     # Room pips (top-centre)
     pip_r, pip_gap = 6, 18
@@ -237,16 +239,21 @@ def draw_pause_screen(surf, font, font_big, sel):
 
     cx = SCREEN_W // 2
     t  = font_big.render("PAUSED", True, UI_WHITE)
-    surf.blit(t, (cx - t.get_width() // 2, SCREEN_H // 2 - 90))
-    pygame.draw.line(surf, (80, 70, 60),
-                     (cx - 100, SCREEN_H // 2 - 58), (cx + 100, SCREEN_H // 2 - 58))
+    surf.blit(t, (cx - t.get_width() // 2, 210))
+    pygame.draw.line(surf, (80, 70, 60), (cx - 100, 256), (cx + 100, 256))
 
-    options = ("RESUME", "RESTART", "QUIT TO MENU")
+    options = ("RESUME", "RESTART", "CONTROLS", "QUIT TO MENU")
+    ind_w = font_big.size(">  ")[0]
     for i, label in enumerate(options):
         active = i == sel
-        t = font_big.render((">  " if active else "   ") + label,
-                            True, GOLD_COL if active else UI_MUTED)
-        surf.blit(t, (cx - t.get_width() // 2, SCREEN_H // 2 - 40 + i * 46))
+        col    = GOLD_COL if active else UI_MUTED
+        y      = 280 + i * 46
+        lbl    = font_big.render(label, True, col)
+        lbl_x  = cx - lbl.get_width() // 2
+        surf.blit(lbl, (lbl_x, y))
+        if active:
+            ind = font_big.render(">", True, GOLD_COL)
+            surf.blit(ind, (lbl_x - ind_w, y))
 
     t = font.render("W/S  ↑↓  navigate     ENTER  select     ESC  resume", True, (65, 58, 50))
     surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
@@ -347,21 +354,85 @@ def draw_menu(surf, font, font_big, font_title, sel, scores):
     draw_bg(surf)
     cx = SCREEN_W // 2
     t = font_title.render("COZY ROGUELIKE", True, UI_WHITE)
-    surf.blit(t, (cx - t.get_width() // 2, 88))
-    t = font.render("a tiny dungeon adventure", True, UI_MUTED)
-    surf.blit(t, (cx - t.get_width() // 2, 136))
-    pygame.draw.line(surf, (55, 48, 40), (cx - 120, 158), (cx + 120, 158))
-    for i, label in enumerate(("NEW GAME", "HIGH SCORES", "QUIT")):
-        y      = 186 + i * 50
+    surf.blit(t, (cx - t.get_width() // 2, 80))
+    pygame.draw.line(surf, (55, 48, 40), (cx - 120, 136), (cx + 120, 136))
+    ind_w = font_big.size(">  ")[0]
+    for i, label in enumerate(("NEW GAME", "HIGH SCORES", "CONTROLS", "CREDITS", "QUIT")):
+        y      = 168 + i * 46
         active = i == sel
-        t = font_big.render((">  " if active else "   ") + label,
-                            True, GOLD_COL if active else UI_MUTED)
-        surf.blit(t, (cx - t.get_width() // 2, y))
+        col    = GOLD_COL if active else UI_MUTED
+        lbl    = font_big.render(label, True, col)
+        lbl_x  = cx - lbl.get_width() // 2
+        surf.blit(lbl, (lbl_x, y))
+        if active:
+            ind = font_big.render(">", True, GOLD_COL)
+            surf.blit(ind, (lbl_x - ind_w, y))
     if scores:
         champ = scores[0]
         t = font.render(f"Record: {champ['name']}  {champ['score']:,}", True, (85, 76, 66))
         surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 40))
     t = font.render("W/S  ↑↓  navigate     ENTER  select", True, (65, 58, 50))
+    surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
+
+
+def draw_credits_screen(surf, font, font_big, font_title):
+    draw_bg(surf)
+    cx = SCREEN_W // 2
+
+    t = font_title.render("CREDITS", True, GOLD_COL)
+    surf.blit(t, (cx - t.get_width() // 2, 80))
+    pygame.draw.line(surf, (55, 48, 40), (cx - 140, 128), (cx + 140, 128))
+
+    entries = [
+        ("A video game by", "Manolis Nikolakakis"),
+        ("Playtester",       "Scott Siri"),
+    ]
+    y = 158
+    for role, name in entries:
+        rt = font.render(role, True, UI_MUTED)
+        surf.blit(rt, (cx - rt.get_width() // 2, y))
+        nt = font_big.render(name, True, UI_WHITE)
+        surf.blit(nt, (cx - nt.get_width() // 2, y + 20))
+        y += 72
+
+    t = font.render("ESC / ENTER  back to menu", True, (65, 58, 50))
+    surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
+
+
+def draw_controls_screen(surf, font, font_big, font_title, from_pause=False):
+    draw_bg(surf)
+    cx = SCREEN_W // 2
+
+    t = font_title.render("CONTROLS", True, UI_WHITE)
+    surf.blit(t, (cx - t.get_width() // 2, 80))
+    pygame.draw.line(surf, (55, 48, 40), (cx - 140, 128), (cx + 140, 128))
+
+    controls = [
+        ("WASD / Arrow Keys", "Move"),
+        ("SPACE",             "Melee attack"),
+        ("E",                 "Shoot arrow"),
+        ("Q",                 "Throw bomb"),
+        ("ESC",               "Pause / Resume"),
+    ]
+
+    PW, PH = 540, 280
+    px = cx - PW // 2
+    py = 150
+    panel = pygame.Surface((PW, PH), pygame.SRCALPHA)
+    panel.fill(PANEL_COL)
+    surf.blit(panel, (px, py))
+    pygame.draw.rect(surf, UI_MUTED, (px, py, PW, PH), 1)
+
+    y = py + 28
+    for key, action in controls:
+        kt = font_big.render(key, True, GOLD_COL)
+        surf.blit(kt, (px + 24, y))
+        at = font_big.render(action, True, UI_WHITE)
+        surf.blit(at, (px + PW - at.get_width() - 24, y))
+        y += 46
+
+    back_hint = "ESC / ENTER  back to game" if from_pause else "ESC / ENTER  back to menu"
+    t = font.render(back_hint, True, (65, 58, 50))
     surf.blit(t, (cx - t.get_width() // 2, SCREEN_H - 22))
 
 

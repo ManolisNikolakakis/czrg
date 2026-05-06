@@ -72,6 +72,8 @@ TRIVIA      = 'trivia'
 PAUSED      = 'paused'
 NAME_ENTRY  = 'name_entry'
 SCORES      = 'scores'
+CREDITS     = 'credits'
+CONTROLS    = 'controls'
 
 # ── Fighter definitions ───────────────────────────────────────────────────────
 FIGHTERS = [
