@@ -131,6 +131,36 @@ def draw_hud(surf, font, player, enemies, elapsed_ticks, best_score,
         frac = 1.0 - player.bomb_timer / BOMB_RECHARGE
         _hbar(surf, rx - 108, BY + 26, 92, 6, frac, (50, 40, 30), BOMB_COL)
 
+    # Superpower
+    SY = BY + 42
+    surf.blit(font.render("R", True, KEY_COL), (rx - 120, SY + 4))
+    sp_ready  = player.superpower_ready
+    sp_active = getattr(player, 'sp_timer', 0) > 0
+    sp_col    = player.col if (sp_ready or sp_active) else (65, 50, 38)
+    scx, scy  = rx - 30, SY + 10
+    s = 10
+    pygame.draw.polygon(surf, sp_col, [
+        (scx,     scy - s),
+        (scx + s, scy),
+        (scx,     scy + s),
+        (scx - s, scy),
+    ])
+    if sp_ready:
+        pygame.draw.polygon(surf, UI_WHITE, [
+            (scx,     scy - s),
+            (scx + s, scy),
+            (scx,     scy + s),
+            (scx - s, scy),
+        ], 1)
+    elif sp_active:
+        frac = player.sp_timer / 300
+        _hbar(surf, rx - 108, SY + 24, 92, 6, frac, (35, 30, 44), player.col)
+        at = font.render("ACTIVE", True, player.col)
+        surf.blit(at, (rx - at.get_width() - 4, SY + 32))
+    else:
+        st = font.render("SPENT", True, (65, 58, 50))
+        surf.blit(st, (rx - st.get_width() - 4, SY + 24))
+
     # Room pips (top-centre)
     pip_r, pip_gap = 6, 18
     total_w = TOTAL_ROOMS * pip_r * 2 + (TOTAL_ROOMS - 1) * (pip_gap - pip_r * 2)
@@ -341,6 +371,21 @@ def draw_char_select(surf, font, font_big, font_title, fighters, sel):
         if active:
             st = font_big.render("> SELECT <", True, GOLD_COL)
             surf.blit(st, (card_cx - st.get_width() // 2, cy_card + CARD_H - 36))
+
+    # ── Superpower description panel (selected fighter) ───────────────────────
+    f    = fighters[sel]
+    desc = f.get('sp_desc', [])
+    col  = f['color']
+
+    panel_y = 530
+    pygame.draw.line(surf, (55, 48, 40), (cx - 260, panel_y), (cx + 260, panel_y))
+
+    lbl = font.render("R  —  SUPERPOWER", True, GOLD_COL)
+    surf.blit(lbl, (cx - lbl.get_width() // 2, panel_y + 10))
+
+    for i, line in enumerate(desc):
+        lt = font.render(line, True, col)
+        surf.blit(lt, (cx - lt.get_width() // 2, panel_y + 30 + i * 18))
 
     hint = font.render(
         "← →  navigate     ENTER / SPACE  confirm     ESC  back to menu",

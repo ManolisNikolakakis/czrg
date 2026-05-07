@@ -2,6 +2,7 @@ import pygame
 import sys
 import json
 import random
+import math
 
 from constants import (
     SCREEN_W, SCREEN_H, FPS, TOTAL_ROOMS,
@@ -154,6 +155,10 @@ def main():
                         menu_sel = (menu_sel + 1) % 5
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         if menu_sel == 0:
+                            pending_minigames = _pick_minigames()
+                            run_hub(screen, clock, font, font_big, font_title,
+                                    next_minigames={'bambie':  pending_minigames[0],
+                                                    'salomon': pending_minigames[1]})
                             state = CHAR_SELECT
                         elif menu_sel == 1:
                             highlight_idx    = -1
@@ -207,6 +212,14 @@ def main():
                             b = player.shoot_bomb()
                             if b:
                                 player_bombs.append(b)
+                        elif event.key == pygame.K_r:
+                            if player.use_superpower():
+                                if player.fighter == 'NUT':
+                                    for e in enemies:
+                                        e.alive = False
+                                    enemies = []
+                                    if boss and boss.alive:
+                                        boss.take_damage(9999)
                         elif event.key == pygame.K_ESCAPE:
                             pause_sel = 0
                             state = PAUSED
@@ -287,6 +300,7 @@ def main():
 
             player.move(dx, dy, walls)
             player.update()
+            player_arrows.extend(player.sp_arrows_pending)
 
             # Item pickup
             for item in items[:]:
@@ -294,11 +308,55 @@ def main():
                     player.apply_item(item.kind)
                     items.remove(item)
 
+            # Pistachio freeze: non-friendly enemies and boss are paused
+            pistachio_freeze = (player.fighter == 'Pistachio' and player.sp_timer > 0)
+
             # Enemy updates + melee attack hits
             for e in enemies:
-                e.update(player, walls)
+                if e.friendly:
+                    # Chase nearest non-friendly enemy and deal contact damage
+                    if e.iframes:
+                        e.iframes -= 1
+                    targets = [t for t in enemies
+                               if t is not e and t.alive and not t.friendly]
+                    if targets:
+                        t = min(targets,
+                                key=lambda t: math.hypot(t.cx - e.cx, t.cy - e.cy))
+                        dx = t.cx - e.cx
+                        dy = t.cy - e.cy
+                        dist = math.hypot(dx, dy)
+                        if dist > 4:
+                            nx, ny = dx / dist, dy / dist
+                            e.x += nx * e.speed
+                            for w in walls:
+                                if e.rect.colliderect(w):
+                                    e.x = w.right if nx < 0 else w.left - e.W
+                            e.y += ny * e.speed
+                            for w in walls:
+                                if e.rect.colliderect(w):
+                                    e.y = w.bottom if ny < 0 else w.top - e.H
+                        if e.rect.colliderect(t.rect):
+                            t.take_damage(1)
+                elif pistachio_freeze:
+                    if e.iframes:
+                        e.iframes -= 1
+                else:
+                    e.update(player, walls)
+                    # Non-friendly enemies deal contact damage to friendly ones
+                    for f in enemies:
+                        if f.friendly and f.alive and e.rect.colliderect(f.rect):
+                            f.take_damage(1)
+
+                # Melee hit
                 if player.attack_rect and e.alive and player.attack_rect.colliderect(e.rect):
-                    e.take_damage(player.melee_dmg)
+                    if not e.friendly:
+                        if pistachio_freeze and player.sp_converts_left > 0:
+                            e.friendly = True
+                            if hasattr(e, 'projectiles'):
+                                e.projectiles.clear()
+                            player.sp_converts_left -= 1
+                        else:
+                            e.take_damage(player.eff_melee_dmg)
             enemies = [e for e in enemies if e.alive]
 
             # Player projectiles
@@ -312,9 +370,14 @@ def main():
 
             # Boss
             if boss and boss.alive:
-                boss.update(player, walls)
+                if not pistachio_freeze:
+                    boss.update(player, walls)
+                    # Boss deals contact damage to friendly enemies
+                    for f in enemies:
+                        if f.friendly and f.alive and boss.rect.colliderect(f.rect):
+                            f.take_damage(1)
                 if player.attack_rect and player.attack_rect.colliderect(boss.rect):
-                    boss.take_damage(player.melee_dmg)
+                    boss.take_damage(player.eff_melee_dmg)
                 if boss.phase2_just_triggered:
                     boss.phase2_just_triggered = False
                     if isinstance(boss, Salomon):
@@ -331,8 +394,8 @@ def main():
             if boss and not boss.alive:
                 boss = None
 
-            # Portal spawns when room is cleared (non-final rooms only)
-            if not enemies and boss is None and portal is None:
+            # Portal spawns when no hostile enemies remain (friendlies don't block it)
+            if all(e.friendly for e in enemies) and boss is None and portal is None:
                 if room_num < TOTAL_ROOMS:
                     portal = Portal()
                 elif not won:
@@ -347,6 +410,7 @@ def main():
                 items          = spawn_items()
                 portal         = None
                 player.place_at_center()
+                player.reset_superpower()
                 if room_num == 3:
                     # Pre-fight minigame for Bambie (blocking)
                     if bambie_minigame == 'dance':

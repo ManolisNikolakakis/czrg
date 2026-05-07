@@ -38,14 +38,16 @@ class Enemy:
     IFRAMES     = 18
 
     def __init__(self, x, y, hp=3, speed=0.90, aggro=None):
-        self.x          = float(x)
-        self.y          = float(y)
-        self.hp         = hp
-        self.max_hp     = hp
-        self.speed      = speed
-        self.alive      = True
-        self.iframes    = 0
-        self.aggro_range = aggro if aggro is not None else self.AGGRO_RANGE
+        self.x            = float(x)
+        self.y            = float(y)
+        self.hp           = hp
+        self.max_hp       = hp
+        self.speed        = speed
+        self.alive        = True
+        self.iframes      = 0
+        self.aggro_range  = aggro if aggro is not None else self.AGGRO_RANGE
+        self.sp_hit_accum = 0.0
+        self.friendly     = False
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -60,6 +62,14 @@ class Enemy:
         if not self.iframes:
             self.hp     -= amount
             self.iframes = self.IFRAMES
+            if self.hp <= 0:
+                self.alive = False
+
+    def sp_hit(self):
+        self.sp_hit_accum += 0.1
+        if self.sp_hit_accum >= 1.0:
+            self.sp_hit_accum -= 1.0
+            self.hp -= 1
             if self.hp <= 0:
                 self.alive = False
 
@@ -88,7 +98,10 @@ class Enemy:
 
     def draw(self, surf):
         flash = self.iframes and (self.iframes // 3) % 2 == 0
-        pygame.draw.rect(surf, HIT_COL if flash else ENEMY_COL, self.rect)
+        col   = HIT_COL if flash else ((95, 210, 120) if self.friendly else ENEMY_COL)
+        pygame.draw.rect(surf, col, self.rect)
+        if self.friendly:
+            pygame.draw.rect(surf, (180, 255, 180), self.rect, 2)
         bx, by = int(self.x), int(self.y) - 7
         pygame.draw.rect(surf, HP_BG, (bx, by, self.W, 4))
         fill = max(0, int(self.W * self.hp / self.max_hp))
@@ -105,17 +118,19 @@ class RangedEnemy:
     IFRAMES     = 18
 
     def __init__(self, x, y, hp=2, speed=0.75, aggro=None):
-        self.x           = float(x)
-        self.y           = float(y)
-        self.hp          = hp
-        self.max_hp      = hp
-        self.speed       = speed
-        self.alive       = True
-        self.iframes     = 0
-        self.strafe      = random.choice((-1, 1))
-        self.shoot_cd    = random.randint(30, 80)   # stagger initial shots
-        self.projectiles = []
-        self.aggro_range = aggro if aggro is not None else self.AGGRO_RANGE
+        self.x            = float(x)
+        self.y            = float(y)
+        self.hp           = hp
+        self.max_hp       = hp
+        self.speed        = speed
+        self.alive        = True
+        self.iframes      = 0
+        self.strafe       = random.choice((-1, 1))
+        self.shoot_cd     = random.randint(30, 80)   # stagger initial shots
+        self.projectiles  = []
+        self.aggro_range  = aggro if aggro is not None else self.AGGRO_RANGE
+        self.sp_hit_accum = 0.0
+        self.friendly     = False
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -130,6 +145,14 @@ class RangedEnemy:
         if not self.iframes:
             self.hp     -= amount
             self.iframes = self.IFRAMES
+            if self.hp <= 0:
+                self.alive = False
+
+    def sp_hit(self):
+        self.sp_hit_accum += 0.1
+        if self.sp_hit_accum >= 1.0:
+            self.sp_hit_accum -= 1.0
+            self.hp -= 1
             if self.hp <= 0:
                 self.alive = False
 
@@ -184,7 +207,10 @@ class RangedEnemy:
 
     def draw(self, surf):
         flash = self.iframes and (self.iframes // 3) % 2 == 0
-        pygame.draw.rect(surf, HIT_COL if flash else RANGED_E_COL, self.rect)
+        col   = HIT_COL if flash else ((95, 210, 120) if self.friendly else RANGED_E_COL)
+        pygame.draw.rect(surf, col, self.rect)
+        if self.friendly:
+            pygame.draw.rect(surf, (180, 255, 180), self.rect, 2)
         pygame.draw.circle(surf, RANGED_E_ORB,     (int(self.cx), int(self.cy)), 5)
         pygame.draw.circle(surf, (255, 255, 200),  (int(self.cx), int(self.cy)), 2)
         bx, by = int(self.x), int(self.y) - 7
@@ -198,7 +224,7 @@ class Salomon:
     """Stone golem miniboss. Triggers floor earthquakes and punishes close-range players with a slam."""
 
     W, H          = 36, 36
-    MAX_HP        = 22
+    MAX_HP        = 32
     SPEED         = 0.38
     IFRAMES       = 40
     AGGRO         = 600
@@ -236,7 +262,8 @@ class Salomon:
         self.slam_active = False
         self.slam_anim   = 0
 
-        self.projectiles = []      # required for interface compatibility
+        self.projectiles  = []      # required for interface compatibility
+        self.sp_hit_accum = 0.0
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -253,6 +280,14 @@ class Salomon:
             self.iframes = self.IFRAMES
             if self.hp <= 0:
                 self.hp    = 0
+                self.alive = False
+
+    def sp_hit(self):
+        self.sp_hit_accum += 0.1
+        if self.sp_hit_accum >= 1.0:
+            self.sp_hit_accum -= 1.0
+            self.hp = max(0, self.hp - 1)
+            if self.hp <= 0:
                 self.alive = False
 
     def update(self, player, walls):
@@ -404,7 +439,7 @@ class Bambie:
     """Fast witch miniboss — triple witch bolts and a telegraphed beam attack."""
 
     W, H          = 22, 22
-    MAX_HP        = 20
+    MAX_HP        = 26
     SPEED         = 1.7
     IFRAMES       = 25
     AGGRO         = 700
@@ -438,7 +473,8 @@ class Bambie:
         self.beam_dir   = (1.0, 0.0)
         self.beam_end   = (0.0, 0.0)
 
-        self.projectiles = []
+        self.projectiles  = []
+        self.sp_hit_accum = 0.0
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -455,6 +491,14 @@ class Bambie:
             self.iframes = self.IFRAMES
             if self.hp <= 0:
                 self.hp    = 0
+                self.alive = False
+
+    def sp_hit(self):
+        self.sp_hit_accum += 0.1
+        if self.sp_hit_accum >= 1.0:
+            self.sp_hit_accum -= 1.0
+            self.hp = max(0, self.hp - 1)
+            if self.hp <= 0:
                 self.alive = False
 
     def update(self, player, walls):
@@ -629,9 +673,10 @@ class Boss:
         self.iframes = 0
         self.phase2  = False
         self.phase2_just_triggered = False
-        self.fb_cd   = 60
-        self.ms_cd   = 0
-        self.projectiles = []
+        self.fb_cd        = 60
+        self.ms_cd        = 0
+        self.projectiles  = []
+        self.sp_hit_accum = 0.0
 
     @property
     def rect(self): return pygame.Rect(int(self.x), int(self.y), self.W, self.H)
@@ -648,6 +693,14 @@ class Boss:
             self.iframes = self.IFRAMES
             if self.hp <= 0:
                 self.hp    = 0
+                self.alive = False
+
+    def sp_hit(self):
+        self.sp_hit_accum += 0.1
+        if self.sp_hit_accum >= 1.0:
+            self.sp_hit_accum -= 1.0
+            self.hp = max(0, self.hp - 1)
+            if self.hp <= 0:
                 self.alive = False
 
     def update(self, player, walls):

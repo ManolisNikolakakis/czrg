@@ -1,7 +1,19 @@
 import pygame
 import math
+import random
 
 from constants import INNER_RECT, FIREBALL_COL, MISSILE_COL, PLAYER_ARROW_C, BOMB_COL
+
+
+def _hue_rgb(h):
+    """Convert hue [0, 360) to a fully-saturated bright RGB tuple."""
+    h  = h % 360
+    hi = int(h / 60)
+    f  = h / 60 - hi
+    v  = 255
+    p, q, t = 0, int(v * (1 - f)), int(v * f)
+    return [(v, t, p), (q, v, p), (p, v, t),
+            (p, q, v), (t, p, v), (v, p, q)][hi]
 
 
 class Projectile:
@@ -100,7 +112,7 @@ class PlayerArrow:
             return
 
         for e in enemies:
-            if e.alive and self.rect.colliderect(e.rect):
+            if e.alive and not e.friendly and self.rect.colliderect(e.rect):
                 e.take_damage(self.damage)
                 self.alive = False
                 return
@@ -120,6 +132,42 @@ class PlayerArrow:
         pygame.draw.line(surf, (110, 150, 50), tail, mid, 2)
         pygame.draw.line(surf, PLAYER_ARROW_C, mid,  tip, 3)
         pygame.draw.circle(surf, (240, 255, 160), tip, 2)
+
+
+class AlmondArrow(PlayerArrow):
+    """Almond's superpower arrow — rainbow colour, bypasses iframes, 10 hits = 1 damage."""
+
+    def update(self, enemies, boss):
+        self.x += self.vx
+        self.y += self.vy
+        self.lifetime -= 1
+
+        if self.lifetime <= 0 or not INNER_RECT.collidepoint(int(self.x), int(self.y)):
+            self.alive = False
+            return
+
+        for e in enemies:
+            if e.alive and not e.friendly and self.rect.colliderect(e.rect):
+                e.sp_hit()
+                self.alive = False
+                return
+
+        if boss and boss.alive and self.rect.colliderect(boss.rect):
+            boss.sp_hit()
+            self.alive = False
+
+    def draw(self, surf):
+        spd = math.hypot(self.vx, self.vy)
+        if spd == 0:
+            return
+        nx, ny = self.vx / spd, self.vy / spd
+        tail = (int(self.x - nx * 9), int(self.y - ny * 9))
+        mid  = (int(self.x),          int(self.y))
+        tip  = (int(self.x + nx * 5), int(self.y + ny * 5))
+        col  = self.color
+        pygame.draw.line(surf, col, tail, mid, 2)
+        pygame.draw.line(surf, col, mid,  tip, 3)
+        pygame.draw.circle(surf, (255, 255, 255), tip, 2)
 
 
 class Bomb:
@@ -168,7 +216,7 @@ class Bomb:
         self.exploding = True
         self.exp_frame = 0
         for e in enemies:
-            if e.alive and _math.hypot(e.cx - self.x, e.cy - self.y) < self.radius:
+            if e.alive and not e.friendly and _math.hypot(e.cx - self.x, e.cy - self.y) < self.radius:
                 e.take_damage(self.damage)
         if boss and boss.alive and _math.hypot(boss.cx - self.x, boss.cy - self.y) < self.radius:
             boss.take_damage(self.damage)

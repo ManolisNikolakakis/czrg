@@ -216,9 +216,8 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
 
     battles = random.sample(RAP_BATTLES, 3)
 
-    state        = "INTRO"
-    intro_timer  = 3.0
-    bg_tick      = 0.0
+    state   = "INTRO"
+    bg_tick = 0.0
     pulse        = 0.0
     shake_frames = 0
 
@@ -252,7 +251,11 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
             if event.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
 
-            if state == "BATTLE" and feedback is None and event.type == pygame.KEYDOWN:
+            if state == "INTRO" and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    state = "BATTLE"
+
+            elif state == "BATTLE" and feedback is None and event.type == pygame.KEYDOWN:
                 if event.key in KEY_TO_IDX:
                     idx = KEY_TO_IDX[event.key]
                     selected_idx = idx
@@ -270,12 +273,7 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
                     state = "DONE"
 
         # ── Update ───────────────────────────────────────────────────────
-        if state == "INTRO":
-            intro_timer -= dt
-            if intro_timer <= 0:
-                state = "BATTLE"
-
-        elif state == "BATTLE":
+        if state == "BATTLE":
             if shake_frames > 0:
                 shake_frames -= 1
 
@@ -330,7 +328,7 @@ def run_rap_battle(screen, clock, player_fighter_name="Pistachio"):
             draw_text_centered(surf, "CAZAROG CHALLENGES YOU IN A RAP BATTLE!", font_big, NEON_PINK,   W // 2, 195, BLACK)
             draw_text_centered(surf, "RAP BATTLE",                               font_huge, col,       W // 2, 240, BLACK)
             draw_text_centered(surf, "Pick the right chunks to rebuild the comeback!", font_med, NEON_CYAN, W // 2, 360)
-            draw_text_centered(surf, f"Starting in {max(0, int(intro_timer) + 1)}...", font_big, NEON_ORANGE, W // 2, 420, BLACK)
+            draw_text_centered(surf, "Press SPACE to begin", font_big, NEON_ORANGE, W // 2, 420, BLACK)
 
         elif state == "BATTLE" and battle_idx < 3:
             battle   = battles[battle_idx]

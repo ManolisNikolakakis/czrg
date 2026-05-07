@@ -87,6 +87,10 @@ FIGHTERS = [
         'arrow_dmg':      2,
         'bomb_dmg':       8,
         'traits': ['Balanced all-rounder', 'No strengths or weaknesses'],
+        'superpower': 'TBD',
+        'sp_desc': ['Freeze all enemies for 5 seconds.',
+                    'Melee up to 2 enemies to turn them into allies.',
+                    'Bosses cannot be converted.'],
     },
     {
         'name':           'Cashew',
@@ -98,6 +102,9 @@ FIGHTERS = [
         'arrow_dmg':      1,
         'bomb_dmg':       5,
         'traits': ['High HP & melee power', 'Reduced arrow & bomb damage'],
+        'superpower': 'TBD',
+        'sp_desc': ['Melee attacks hit in all directions for 5 seconds.',
+                    'Melee damage is doubled during this time.'],
     },
     {
         'name':           'Almond',
@@ -109,6 +116,9 @@ FIGHTERS = [
         'arrow_dmg':      3,
         'bomb_dmg':       13,
         'traits': ['High arrow & bomb damage', 'Lower HP & melee power'],
+        'superpower': 'TBD',
+        'sp_desc': ['Fires rainbow arrows continuously for 5 seconds.',
+                    'Every 10 arrows that hit an enemy deal 1 damage.'],
     },
     {
         'name':           'NUT',
@@ -118,11 +128,13 @@ FIGHTERS = [
         'atk_size_base':  36,
         'atk_size_boost': 54,
         'arrow_dmg':      10,
-        'bomb_dmg':       30,
+        'bomb_dmg':       2,
         'bomb_radius':    800,
         'max_bombs':      3,
         'max_arrows':     10,
         'traits': ['10 damage per melee hit', '10 arrows, 10 dmg each'],
+        'superpower': 'TBD',
+        'sp_desc': ['Instantly defeats every enemy in the room.'],
     },
 ]
 

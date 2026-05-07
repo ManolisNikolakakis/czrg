@@ -7,7 +7,7 @@ from constants import (
     ARROW_RECHARGE, BOMB_RECHARGE, INVULN_DURATION,
     FIGHTERS,
 )
-from projectiles import PlayerArrow, Bomb
+from projectiles import PlayerArrow, Bomb, AlmondArrow, _hue_rgb
 
 
 class Player:
@@ -30,11 +30,18 @@ class Player:
         self.melee_dmg      = f['melee_dmg']
         self.atk_size_base  = f['atk_size_base']
         self.atk_size_boost = f['atk_size_boost']
-        self.arrow_dmg      = f['arrow_dmg']
-        self.bomb_dmg       = f['bomb_dmg']
-        self.bomb_radius    = f.get('bomb_radius', None)
-        self.MAX_ARROWS     = f.get('max_arrows', Player.MAX_ARROWS)
-        self.MAX_BOMBS      = f.get('max_bombs',  Player.MAX_BOMBS)
+        self.arrow_dmg        = f['arrow_dmg']
+        self.bomb_dmg         = f['bomb_dmg']
+        self.bomb_radius      = f.get('bomb_radius', None)
+        self.MAX_ARROWS       = f.get('max_arrows', Player.MAX_ARROWS)
+        self.MAX_BOMBS        = f.get('max_bombs',  Player.MAX_BOMBS)
+        self.superpower_name   = f.get('superpower', 'TBD')
+        self.superpower_ready  = True
+        self.sp_timer          = 0    # frames remaining in active superpower
+        self.sp_shoot_cd       = 0    # Almond: frames until next arrow
+        self.sp_hue            = 0.0  # Almond: cycling hue
+        self.sp_arrows_pending = []   # Almond: arrows emitted this frame
+        self.sp_converts_left  = 0    # Pistachio: enemy converts remaining
 
         self.x = 0.0
         self.y = 0.0
@@ -83,6 +90,12 @@ class Player:
     def eff_cd(self):
         return 10 if self.attack_timer else self.ATK_CD
 
+    @property
+    def eff_melee_dmg(self):
+        if self.fighter == 'Cashew' and self.sp_timer > 0:
+            return self.melee_dmg * 2
+        return self.melee_dmg
+
     # ── Actions ───────────────────────────────────────────────────────────────
 
     def move(self, dx, dy, walls):
@@ -114,6 +127,26 @@ class Player:
                                damage=self.arrow_dmg)
         return None
 
+    def use_superpower(self):
+        if not self.superpower_ready:
+            return False
+        self.superpower_ready = False
+        if self.fighter == 'Almond':
+            self.sp_timer    = 300
+            self.sp_shoot_cd = 0
+            self.sp_hue      = 0.0
+        elif self.fighter == 'Cashew':
+            self.sp_timer = 300
+        elif self.fighter == 'Pistachio':
+            self.sp_timer         = 300
+            self.sp_converts_left = 2
+        return True
+
+    def reset_superpower(self):
+        self.superpower_ready = True
+        self.sp_timer         = 0
+        self.sp_converts_left = 0
+
     def shoot_bomb(self):
         if self.bombs > 0:
             self.bombs -= 1
@@ -143,6 +176,22 @@ class Player:
     # ── Update ────────────────────────────────────────────────────────────────
 
     def update(self):
+        self.sp_arrows_pending = []
+        if self.sp_timer > 0:
+            self.sp_timer -= 1
+            if self.fighter == 'Almond':
+                if self.sp_shoot_cd > 0:
+                    self.sp_shoot_cd -= 1
+                if self.sp_shoot_cd == 0:
+                    self.sp_shoot_cd = 6   # 10 arrows per second
+                    col   = _hue_rgb(self.sp_hue)
+                    self.sp_hue = (self.sp_hue + 36) % 360
+                    fx, fy = self.facing
+                    a = AlmondArrow(self.cx, self.cy,
+                                    fx * AlmondArrow.SPEED, fy * AlmondArrow.SPEED)
+                    a.color = col
+                    self.sp_arrows_pending.append(a)
+
         if self.cooldown:     self.cooldown -= 1
         if self.iframes:      self.iframes  -= 1
         if self.speed_timer:  self.speed_timer  -= 1
@@ -169,19 +218,35 @@ class Player:
 
         if self.atk_timer:
             self.atk_timer -= 1
-            half = self.atk_size // 2
-            fx, fy = self.facing
-            self.attack_rect = pygame.Rect(
-                int(self.cx + fx * (half + 13) - half),
-                int(self.cy + fy * (half + 13) - half),
-                self.atk_size, self.atk_size,
-            )
+            if self.fighter == 'Cashew' and self.sp_timer > 0:
+                size = self.atk_size * 2
+                self.attack_rect = pygame.Rect(
+                    int(self.cx - size // 2),
+                    int(self.cy - size // 2),
+                    size, size,
+                )
+            else:
+                half = self.atk_size // 2
+                fx, fy = self.facing
+                self.attack_rect = pygame.Rect(
+                    int(self.cx + fx * (half + 13) - half),
+                    int(self.cy + fy * (half + 13) - half),
+                    self.atk_size, self.atk_size,
+                )
         else:
             self.attack_rect = None
 
     # ── Draw ──────────────────────────────────────────────────────────────────
 
     def draw(self, surf):
+        if self.fighter == 'Cashew' and self.sp_timer > 0:
+            radius = self.atk_size + int(math.sin(self.draw_tick * 0.18) * 5)
+            s = pygame.Surface((radius * 2 + 4, radius * 2 + 4), pygame.SRCALPHA)
+            alpha = 120 + int(60 * math.sin(self.draw_tick * 0.18))
+            pygame.draw.circle(s, (*ATTACK_BCOL, alpha),
+                               (radius + 2, radius + 2), radius, 3)
+            surf.blit(s, (int(self.cx) - radius - 2, int(self.cy) - radius - 2))
+
         if self.invuln_timer > 0:
             pulse = int(math.sin(self.invuln_timer * 0.25) * 3)
             pygame.draw.rect(surf, INVULN_COL, self.rect.inflate(10 + pulse, 10 + pulse), 2)
