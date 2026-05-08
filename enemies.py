@@ -65,8 +65,8 @@ class Enemy:
             if self.hp <= 0:
                 self.alive = False
 
-    def sp_hit(self):
-        self.sp_hit_accum += 0.1
+    def sp_hit(self, amount=0.1):
+        self.sp_hit_accum += amount
         if self.sp_hit_accum >= 1.0:
             self.sp_hit_accum -= 1.0
             self.hp -= 1
@@ -148,8 +148,8 @@ class RangedEnemy:
             if self.hp <= 0:
                 self.alive = False
 
-    def sp_hit(self):
-        self.sp_hit_accum += 0.1
+    def sp_hit(self, amount=0.1):
+        self.sp_hit_accum += amount
         if self.sp_hit_accum >= 1.0:
             self.sp_hit_accum -= 1.0
             self.hp -= 1
@@ -282,8 +282,8 @@ class Salomon:
                 self.hp    = 0
                 self.alive = False
 
-    def sp_hit(self):
-        self.sp_hit_accum += 0.1
+    def sp_hit(self, amount=0.1):
+        self.sp_hit_accum += amount
         if self.sp_hit_accum >= 1.0:
             self.sp_hit_accum -= 1.0
             self.hp = max(0, self.hp - 1)
@@ -493,8 +493,8 @@ class Bambie:
                 self.hp    = 0
                 self.alive = False
 
-    def sp_hit(self):
-        self.sp_hit_accum += 0.1
+    def sp_hit(self, amount=0.1):
+        self.sp_hit_accum += amount
         if self.sp_hit_accum >= 1.0:
             self.sp_hit_accum -= 1.0
             self.hp = max(0, self.hp - 1)
@@ -695,8 +695,8 @@ class Boss:
                 self.hp    = 0
                 self.alive = False
 
-    def sp_hit(self):
-        self.sp_hit_accum += 0.1
+    def sp_hit(self, amount=0.1):
+        self.sp_hit_accum += amount
         if self.sp_hit_accum >= 1.0:
             self.sp_hit_accum -= 1.0
             self.hp = max(0, self.hp - 1)

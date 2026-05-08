@@ -123,8 +123,8 @@ FIGHTERS = [
     {
         'name':           'NUT',
         'color':          (172, 130, 58),
-        'hp':             100,
-        'melee_dmg':      10,
+        'hp':             10,
+        'melee_dmg':      1,
         'atk_size_base':  36,
         'atk_size_boost': 54,
         'arrow_dmg':      10,

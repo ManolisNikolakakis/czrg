@@ -429,8 +429,9 @@ def draw_credits_screen(surf, font, font_big, font_title):
     pygame.draw.line(surf, (55, 48, 40), (cx - 140, 128), (cx + 140, 128))
 
     entries = [
-        ("A video game by", "Manolis Nikolakakis"),
-        ("Playtester",       "Scott Siri"),
+        ("A video game by",        "Manolis Nikolakakis"),
+        ("Playtester",             "Scott Siri"),
+        ("Trivia Question Designers", "Tony Resta"),
     ]
     y = 158
     for role, name in entries:

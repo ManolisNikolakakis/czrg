@@ -160,6 +160,8 @@ class Player:
         return None
 
     def take_damage(self, amount):
+        if self.fighter == 'NUT':
+            return
         if self.invuln_timer > 0:
             return
         if not self.iframes:

@@ -148,12 +148,12 @@ class AlmondArrow(PlayerArrow):
 
         for e in enemies:
             if e.alive and not e.friendly and self.rect.colliderect(e.rect):
-                e.sp_hit()
+                e.sp_hit(0.2)
                 self.alive = False
                 return
 
         if boss and boss.alive and self.rect.colliderect(boss.rect):
-            boss.sp_hit()
+            boss.sp_hit(0.2)
             self.alive = False
 
     def draw(self, surf):
