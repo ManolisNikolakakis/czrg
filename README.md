@@ -8,10 +8,12 @@ Cazarog is a top-down action roguelike featuring procedurally generated dungeons
 
 Current prototype features:
 - Top-down 8-directional movement and combat
-- Procedurally generated dungeon floor
-- Multiple enemy types with distinct behaviours
+- 9 rooms to go through in a dungeon-crawler
+- A hub to hang out with the characters from the game
+- 3 unique fighters to choose from
+- 5 pre-boss minigames
+- 3 unique bosses
 - Health items and powerups
-- Simple progression loop with permadeath
 
 ## Status
 
@@ -32,7 +34,6 @@ Claude Code serves as a coding assistant — the creative vision and decisions a
 
 - **Language:** Python 3
 - **Framework:** Pygame
-- **Version Control:** Git / GitHub
 
 ## Running the Game
 
@@ -47,12 +48,3 @@ Then run:
 ```bash
 python cozy_roguelike.py
 ```
-
-## Roadmap
-- [ ] Adapt rap battle, expand minigames
-- [ ] Add dialogue and narrative
-- [ ] Procedural dungeon generation
-- [ ] Multiple enemy types
-- [ ] Original pixel art
-- [ ] Original soundtrack
-- [ ] Itch.io release
